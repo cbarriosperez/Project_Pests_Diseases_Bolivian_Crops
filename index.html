@@ -214,6 +214,39 @@
             border-radius: 50%;
         }
 
+        /* Crop Icons */
+        .crop-icons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .crop-badge {
+            background-color: #f1f5f9;
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--dark-bg);
+            transition: all 0.2s;
+        }
+        
+        .crop-badge:hover {
+            border-color: var(--cat-green);
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
+        }
+        
+        .crop-badge .emoji {
+            font-size: 1.25rem;
+        }
+
         /* Cards */
         .grid {
             display: grid;
@@ -439,15 +472,15 @@
             <div>
                 <h3><span style="color:var(--accent-color)">✓</span> Alcance Geográfico y Cultivos</h3>
                 <p>El proyecto se enfoca en las principales áreas agrícolas de Bolivia, abarcando cultivos esenciales para la economía y seguridad alimentaria:</p>
-                <ul class="styled-list">
-                    <li>Forrajes</li>
-                    <li>Papa</li>
-                    <li>Quinua</li>
-                    <li>Soya</li>
-                    <li>Maíz</li>
-                    <li>Sorgo</li>
-                    <li>Trigo y Arroz</li>
-                </ul>
+                <div class="crop-icons">
+                    <span class="crop-badge"><span class="emoji">🌿</span> Forrajes</span>
+                    <span class="crop-badge"><span class="emoji">🥔</span> Papa</span>
+                    <span class="crop-badge"><span class="emoji">🌾</span> Quinua</span>
+                    <span class="crop-badge"><span class="emoji">🌱</span> Soya</span>
+                    <span class="crop-badge"><span class="emoji">🌽</span> Maíz</span>
+                    <span class="crop-badge"><span class="emoji">🪴</span> Sorgo</span>
+                    <span class="crop-badge"><span class="emoji">🌾</span> Trigo y Arroz</span>
+                </div>
             </div>
             <div>
                 <h3><span style="color:var(--accent-color)">✓</span> Cronograma de Ejecución</h3>
