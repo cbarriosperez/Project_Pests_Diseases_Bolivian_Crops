@@ -500,54 +500,7 @@
             color: #f3f4f6;
         }
 
-        /* Modal (Lightbox) */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            padding-top: 50px;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.85);
-            backdrop-filter: blur(4px);
-        }
 
-        .modal-content {
-            margin: 50px auto;
-            display: block;
-            width: auto;
-            max-width: none;
-            max-height: none;
-            border-radius: 4px;
-            animation: zoomIn 0.3s;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-
-        @keyframes zoomIn {
-            from {transform:scale(0.9); opacity:0}
-            to {transform:scale(1); opacity:1}
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 20px;
-            right: 40px;
-            color: #f1f1f1;
-            font-size: 45px;
-            font-weight: bold;
-            transition: color 0.2s;
-            cursor: pointer;
-            z-index: 2001;
-        }
-
-        .close-modal:hover,
-        .close-modal:focus {
-            color: var(--cat-green);
-            text-decoration: none;
-        }
 
         @media (max-width: 768px) {
             nav {
@@ -639,8 +592,10 @@
 
                 <div class="infographic-container" style="text-align: left; margin: 2.5rem 0 0 0; padding: 1.25rem; border-radius: 4px; background: #ffffff; border: 1px solid var(--border-color);">
                     <h4 style="margin-top: 0; margin-bottom: 1rem; color: var(--dark-bg);">Flujo del Modelo</h4>
-                    <img id="projectInfographic" src="Infografias/Presentación del proyecto.png" alt="Infografía del Proyecto - SAT Plagas y Enfermedades Bolivia" style="max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: zoom-in; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)';" onclick="openModal()">
-                    <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 15px; font-style: italic;">Haz clic en la imagen para agrandarla y ver el mapa completo.</p>
+                    <a href="Infografias/Presentación del proyecto.png" download="Presentacion_Proyecto_SAT.png" style="display: block; text-decoration: none;" title="Descargar infografía original">
+                        <img id="projectInfographic" src="Infografias/Presentación del proyecto.png" alt="Infografía del Proyecto - SAT Plagas y Enfermedades Bolivia" style="max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)';">
+                    </a>
+                    <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 15px; font-style: italic;">Haz clic en la imagen para <strong>descargarla</strong> en su tamaño original.</p>
                 </div>
             </div>
             <div>
@@ -895,36 +850,6 @@
         // Start auto slide
         resetTimer();
 
-        // Lightbox Logic
-        var modal = document.getElementById("imageModal");
-        var modalImg = document.getElementById("modalImg");
-        var img = document.getElementById("projectInfographic");
-        
-        function openModal() {
-            modal.style.display = "block";
-            
-            modalImg.src = img.src;
-            document.body.style.overflow = "hidden"; // disable background scrolling
-        }
-
-        function closeModal() {
-            modal.style.display = "none";
-            document.body.style.overflow = "auto";
-        }
-        
-        // Close modal on outside click
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                closeModal();
-            }
-        }
-    </script>
-    
-    <!-- Lightbox Modal HTML -->
-    <div id="imageModal" class="modal">
-        <span class="close-modal" title="Cerrar imagen" onclick="closeModal()">&times;</span>
-        <img class="modal-content" id="modalImg">
-    </div>
 
 </body>
 </html>
