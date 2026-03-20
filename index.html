@@ -34,40 +34,6 @@
             scroll-behavior: smooth;
         }
 
-        /* Top Ticker */
-        .top-ticker {
-            background-color: var(--cat-green);
-            color: #ffffff;
-            padding: 8px 0;
-            font-size: 0.85rem;
-            font-weight: 700;
-            overflow: hidden;
-            white-space: nowrap;
-            position: relative;
-            z-index: 1001;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .ticker-content {
-            display: inline-block;
-            padding-left: 100%;
-            animation: ticker 30s linear infinite;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        
-        .ticker-content:hover {
-            animation-play-state: paused;
-        }
-
-        .ticker-item {
-            margin-right: 3rem;
-        }
-
-        @keyframes ticker {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-100%, 0, 0); }
-        }
 
         /* Navbar */
         nav {
@@ -126,15 +92,14 @@
             color: var(--cat-green);
         }
 
-        /* Hero */
+        /* Hero Carousel */
         .hero {
+            padding: 0;
             background-color: var(--dark-bg);
-            color: #ffffff;
-            padding: 6rem 2.5rem;
-            text-align: left;
             position: relative;
+            overflow: hidden;
         }
-        
+
         .hero::after {
             content: '';
             position: absolute;
@@ -143,11 +108,28 @@
             right: 0;
             height: 6px;
             background: linear-gradient(90deg, var(--cat-green) 20%, var(--cat-yellow) 40%, var(--cat-orange) 60%, var(--cat-red) 80%);
+            z-index: 10;
+        }
+
+        .hero-carousel {
+            display: flex;
+            width: 100%;
+            transition: transform 0.5s ease;
+        }
+
+        .carousel-slide {
+            flex: 0 0 100%;
+            padding: 7rem 2.5rem;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
         }
 
         .hero-content {
             max-width: 1100px;
             margin: 0 auto;
+            width: 100%;
+            color: #ffffff;
         }
 
         .hero h1 {
@@ -156,6 +138,51 @@
             line-height: 1.1;
             font-weight: 800;
             letter-spacing: -0.5px;
+        }
+
+        /* Controls */
+        .carousel-control {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 1.5rem 1rem;
+            font-size: 2rem;
+            transition: background 0.3s;
+            z-index: 5;
+        }
+
+        .carousel-control:hover {
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--cat-green);
+        }
+
+        .carousel-control.prev { left: 0; }
+        .carousel-control.next { right: 0; }
+
+        .carousel-indicators {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 5;
+        }
+
+        .dot {
+            height: 4px;
+            width: 30px;
+            background-color: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .dot.active, .dot:hover {
+            background-color: var(--cat-green);
         }
 
         .hero p.summary {
@@ -476,15 +503,6 @@
 </head>
 <body>
     
-    <div class="top-ticker">
-        <div class="ticker-content">
-            <span class="ticker-item">🚜 <strong>Proyecto:</strong> Desarrollo e Implementación del SAT Plagas y Enfermedades</span>
-            <span class="ticker-item">🤝 <strong>Socios:</strong> Alliance of Bioversity International & CIAT, YAPU Solutions</span>
-            <span class="ticker-item">📅 <strong>Período de Ejecución:</strong> Febrero - Octubre 2026</span>
-            <span class="ticker-item">🌱 <strong>Enfoque:</strong> Seguridad alimentaria y resiliencia climática en Bolivia</span>
-        </div>
-    </div>
-
     <nav>
         <div class="logo">SAT Bolivia - Plagas y Enfermedades</div>
         <ul>
@@ -497,12 +515,37 @@
     </nav>
 
     <header class="hero" id="inicio">
-        <!-- Source: Metodología del Proyecto | Prompt -->
-        <h1>Desarrollo e Implementación de un Sistema de Alerta Temprana para el Monitoreo de Plagas y Enfermedades en Cultivos Bolivianos</h1>
-        <p class="summary">Documentación Oficial del Proyecto: Modelado agroclimático integral y evaluación de vulnerabilidad espaciotemporal para la agricultura familiar y seguridad alimentaria.</p>
-        <div class="logos">
-            <div class="logo-group">Alliance of Bioversity International & CIAT</div>
-            <div class="logo-group">YAPU Solutions</div>
+        <div class="hero-carousel">
+            <!-- Slide 1 -->
+            <div class="carousel-slide">
+                <div class="hero-content">
+                    <h1>Desarrollo e Implementación de un Sistema de Alerta Temprana</h1>
+                    <p class="summary">Monitoreo de Plagas y Enfermedades en Cultivos Bolivianos mediante modelado agroclimático integral y evaluación de vulnerabilidad para la agricultura familiar.</p>
+                </div>
+            </div>
+            <!-- Slide 2 -->
+            <div class="carousel-slide">
+                <div class="hero-content">
+                    <h1>Socios Estratégicos del Proyecto</h1>
+                    <p class="summary">Ejecutado por Alliance of Bioversity International & CIAT en conjunto con YAPU Solutions protegiendo la agricultura boliviana.</p>
+                </div>
+            </div>
+            <!-- Slide 3 -->
+            <div class="carousel-slide">
+                <div class="hero-content">
+                    <h1>Cronograma de Ejecución Acelerado</h1>
+                    <p class="summary">Desarrollo programado entre Febrero y Octubre de 2026 para implementar alertas accionables y oportunas.</p>
+                </div>
+            </div>
+        </div>
+
+        <button class="carousel-control prev" onclick="moveSlide(-1)">&#10094;</button>
+        <button class="carousel-control next" onclick="moveSlide(1)">&#10095;</button>
+        
+        <div class="carousel-indicators">
+            <span class="dot active" onclick="currentSlide(1)"></span>
+            <span class="dot" onclick="currentSlide(2)"></span>
+            <span class="dot" onclick="currentSlide(3)"></span>
         </div>
     </header>
 
@@ -738,6 +781,46 @@
         if(window.scrollY === 0) {
             document.querySelector('nav ul li a').classList.add('active');
         }
+
+        // Carousel Logic
+        let slideIndex = 1;
+        let slideTimer;
+
+        function showSlides(n) {
+            let slides = document.getElementsByClassName("carousel-slide");
+            let carousel = document.querySelector(".hero-carousel");
+            let dots = document.getElementsByClassName("dot");
+            
+            if (n > slides.length) {slideIndex = 1}    
+            if (n < 1) {slideIndex = slides.length}
+            
+            carousel.style.transform = `translateX(-${(slideIndex - 1) * 100}%)`;
+            
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" active", "");
+            }
+            dots[slideIndex-1].className += " active";
+        }
+
+        function moveSlide(n) {
+            showSlides(slideIndex += n);
+            resetTimer();
+        }
+
+        function currentSlide(n) {
+            showSlides(slideIndex = n);
+            resetTimer();
+        }
+        
+        function resetTimer() {
+            clearInterval(slideTimer);
+            slideTimer = setInterval(function() {
+                moveSlide(1);
+            }, 6000);
+        }
+        
+        // Start auto slide
+        resetTimer();
     </script>
 </body>
 </html>
