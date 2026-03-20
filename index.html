@@ -96,8 +96,27 @@
         .hero {
             padding: 0;
             background-color: var(--dark-bg);
+            background: linear-gradient(135deg, #182330 0%, #102b1b 50%, #151e28 100%);
+            background-size: 200% 200%;
+            animation: HeroGradientShift 15s ease infinite;
             position: relative;
             overflow: hidden;
+        }
+
+        @keyframes HeroGradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1.5px, transparent 1px);
+            background-size: 25px 25px;
+            z-index: 1;
+            pointer-events: none;
         }
 
         .hero::after {
