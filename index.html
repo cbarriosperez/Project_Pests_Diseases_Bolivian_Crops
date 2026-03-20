@@ -34,6 +34,41 @@
             scroll-behavior: smooth;
         }
 
+        /* Top Ticker */
+        .top-ticker {
+            background-color: var(--cat-green);
+            color: #ffffff;
+            padding: 8px 0;
+            font-size: 0.85rem;
+            font-weight: 700;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            z-index: 1001;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .ticker-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker 30s linear infinite;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .ticker-content:hover {
+            animation-play-state: paused;
+        }
+
+        .ticker-item {
+            margin-right: 3rem;
+        }
+
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
         /* Navbar */
         nav {
             position: sticky;
@@ -440,6 +475,15 @@
     </style>
 </head>
 <body>
+    
+    <div class="top-ticker">
+        <div class="ticker-content">
+            <span class="ticker-item">🚜 <strong>Proyecto:</strong> Desarrollo e Implementación del SAT Plagas y Enfermedades</span>
+            <span class="ticker-item">🤝 <strong>Socios:</strong> Alliance of Bioversity International & CIAT, YAPU Solutions</span>
+            <span class="ticker-item">📅 <strong>Período de Ejecución:</strong> Febrero - Octubre 2026</span>
+            <span class="ticker-item">🌱 <strong>Enfoque:</strong> Seguridad alimentaria y resiliencia climática en Bolivia</span>
+        </div>
+    </div>
 
     <nav>
         <div class="logo">SAT Bolivia - Plagas y Enfermedades</div>
