@@ -1,0 +1,32 @@
+﻿||||||||||||
+||Activities per month (2026)|||||||||Deliverables|
+|Activities|February|March|April|May|June|July|August|September|October||
+|Definition of Crops of Interest and Study Areas||||||||||1) Short-form inception report, including data analysis by BDP and an extrapolation of implications for the project.|
+|Review official databases (INE, Ministry of Rural Development)
+ and international sources (FAOSTAT) to collect historical agricultural statistics.|||||||||||
+|Classification of agricultural zones by municipality based on their predominant activity and selection of crops of interest (potato, quinoa, soybean, maize, etc.).|||||||||||
+|Preliminary spatial analysis of production areas using GIS tools to map the selected agricultural zones.|||||||||||
+|Completion of the mapping process and preparation of a preliminary report describing the study areas and the selected crops.|||||||||||
+|Identification of Major Pests and Diseases|||||||||||
+|Literature review to gather information on the main pests and diseases affecting the selected crops. Consult scientific articles, technical reports, and government documents.|||||||||||
+|Design and preparation of interviews and surveys for local  agronomists and agricultural extension workers.|||||||||||
+|Conduct interviews and surveys with local experts in the study areas to identify the most frequent problems, critical periods, and climatic thresholds.|||||||||||
+|Analysis of the collected information and development of a catalog of pests and diseases, including a summary of environmental conditions and critical thresholds.|||||||||||
+|Generation of Agroclimatic Indices||||||||||1) Agroclimatic risk indices package: Threshold and algorithm definitions (incorporating temperature, rainfall, humidity, etc) for computing pest and disease risks, including validation steps.|
+|Collection of historical climate data (CHIRPS and AgERA5) for the study areas, including variables such as temperature, precipitation, and humidity.|||||||||||
+|Statistical analysis of climate data and their relationship with historical records of pests and diseases to identify favorable environmental conditions.|||||||||||
+|Establishment of critical thresholds for each climatic variable and identification of interactions using multivariable models.|||||||||||
+|Definition of agroclimatic indicators and preliminary validation with field data and consultations with local experts.|||||||||||
+|Spatiotemporal Analysis of Agroclimatic Indices||||||||||1) Vulnerability maps and analytics: Spatiotemporal risk maps illustrating historical hotspots and risk patterns under extreme conditions (e.g., El Niño/La Niña) to inform regional targeting.|
+|Processing of secondary climatic data (CHIRPS and AgERA5) to  calculate the defined agroclimatic indicators at a spatial resolution of five km.|||||||||||
+|Mapping of agricultural areas using agroclimatic indices to identify zones historically vulnerable to pests and diseases.|||||||||||
+|Analysis of indicators during extreme events such as El Niño and La Niña to assess changes in risk conditions.|||||||||||
+|Preparation of a detailed report outlining the results of the spatiotemporal analysis, including the characterization of the most vulnerable areas.|||||||||||
+|Generation of Seasonal Climate Forecasts and Risk Assessment||||||||||1) Seasonal forecast-driven risk outlooks and early warnings: Seasonal forecasts downscaled to a daily timescale, featuring indicators derived from the outlooks and the resulting risk maps and bulletins.
+
+2) Forecasting and Alerts Engine (Easy-to-run, integration-ready): A well-documented codebase with step-by-step routines that transform weather data and crop/pest rules into risk forecasts and early-warning alerts. It runs on a laptop or server and integrates with existing platforms or apps.|
+|Generation of seasonal climate forecasts using the canonical correlation analysis (CCA) method for the study areas.|||||||||||
+|Application of the historical resampling method to transform probabilistic forecasts into daily deterministic data.|||||||||||
+|Calculation of agroclimatic indices for the forecasted climatic conditions.|||||||||||
+|Identification of areas with the highest probability of favorable conditions for pests and diseases, creation of early warnings, and drafting of the final report, including recommendations for farmers and agricultural technicians.|||||||||||
+||||||||||||
