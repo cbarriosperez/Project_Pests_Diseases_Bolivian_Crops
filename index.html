@@ -288,37 +288,65 @@
             border-radius: 50%;
         }
 
-        /* Crop Icons */
-        .crop-icons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
+        /* Updated Crop Icons & Interactivity */
+        .crop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
         }
-        
-        .crop-badge {
-            background-color: #f1f5f9;
+        .crop-card {
+            background: #ffffff;
             border: 1px solid var(--border-color);
-            padding: 8px 15px;
-            border-radius: 4px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            display: inline-flex;
+            padding: 1.25rem 1rem;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
-            color: var(--dark-bg);
-            transition: all 0.2s;
+            gap: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
-        
-        .crop-badge:hover {
+        .crop-card:hover, .crop-card.active {
             border-color: var(--cat-green);
-            background-color: #ffffff;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(100, 168, 68, 0.12);
+            transform: translateY(-4px);
         }
-        
-        .crop-badge .emoji {
-            font-size: 1.25rem;
+        .crop-card.active {
+            background-color: #f0fdf4;
+            border-width: 2px;
+        }
+        .crop-card .emoji {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        .crop-card span {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--dark-bg);
+        }
+        .crop-info-box {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f8fafc;
+            border-left: 5px solid var(--cat-light-green);
+            border-radius: 4px;
+            min-height: 80px;
+            display: none;
+            animation: slideUpFade 0.4s ease-out;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+        }
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .crop-info-box strong {
+            color: var(--cat-green);
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
         }
 
         /* Cards */
@@ -913,28 +941,47 @@
         
         <p>El presente proyecto tiene como objetivo desarrollar e implementar un <strong>Sistema de Alerta Temprana (SAT) para el monitoreo de plagas y enfermedades</strong> en cultivos clave de Bolivia. Este sistema está diseñado para anticipar brotes epidemiológicos mediante el análisis de condiciones climáticas históricas y pronósticos estacionales, permitiendo a los agricultores e instituciones tomar medidas preventivas.</p>
         
-        <div class="grid" style="grid-template-columns: 1fr 1fr;">
-            <div>
-                <h3><span style="color:var(--accent-color)">✓</span> Alcance Geográfico y Cultivos</h3>
-                <p>El proyecto se enfoca en las principales áreas agrícolas de Bolivia, abarcando cultivos esenciales para la economía y seguridad alimentaria:</p>
-                <div class="crop-icons">
-                    <span class="crop-badge"><span class="emoji">🥔</span> Papa</span>
-                    <span class="crop-badge"><span class="emoji">🌽</span> Maíz</span>
-                    <span class="crop-badge"><span class="emoji">🌾</span> Quinua</span>
-                    <span class="crop-badge"><span class="emoji">🍇</span> Uva</span>
-                    <span class="crop-badge"><span class="emoji">🍑</span> Durazno</span>
-                    <span class="crop-badge"><span class="emoji">🍅</span> Tomate</span>
-                    <span class="crop-badge"><span class="emoji">☕</span> Café</span>
-                    <span class="crop-badge"><span class="emoji">🧅</span> Cebolla o cebollín</span>
+        <div class="presentation-header" style="margin-bottom: 3rem;">
+            <p style="font-size: 1.15rem; color: var(--text-color); max-width: 900px;">El proyecto se enfoca en las principales áreas agrícolas de Bolivia, analizando cultivos esenciales para la economía y seguridad alimentaria. Haz clic en cada cultivo para conocer su relevancia estratégica:</p>
+            
+            <div class="crop-grid">
+                <div class="crop-card" onclick="showCropInfo('Papa')">
+                    <span class="emoji">🥔</span>
+                    <span>Papa</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Maíz')">
+                    <span class="emoji">🌽</span>
+                    <span>Maíz</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Quinua')">
+                    <span class="emoji">🌾</span>
+                    <span>Quinua</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Uva')">
+                    <span class="emoji">🍇</span>
+                    <span>Uva</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Durazno')">
+                    <span class="emoji">🍑</span>
+                    <span>Durazno</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Tomate')">
+                    <span class="emoji">🍅</span>
+                    <span>Tomate</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Café')">
+                    <span class="emoji">☕</span>
+                    <span>Café</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Cebolla')">
+                    <span class="emoji">🧅</span>
+                    <span>Cebolla</span>
                 </div>
             </div>
-            <div>
-                <h3><span style="color:var(--accent-color)">✓</span> Cronograma de Ejecución</h3>
-                <p>De acuerdo a la planificación establecida, el desarrollo del componente se lleva a cabo entre:</p>
-                <div style="font-size: 1.5rem; color: var(--primary-color); font-weight: bold; margin: 1rem 0;">
-                    Febrero — Octubre 2026
-                </div>
-                <p>Durante este período se completan las fases de identificación de zonas, revisión epidemiológica, modelado agroclimático, mapeo de vulnerabilidad y generación de alertas tempranas.</p>
+
+            <!-- Detail area for crops -->
+            <div id="crop-info-box" class="crop-info-box">
+                <div id="crop-info-content">Selecciona un cultivo para ver su importancia en el SAT.</div>
             </div>
         </div>
 
@@ -1400,6 +1447,36 @@
             } else {
                 noEventsMsg.style.display = 'none';
             }
+        }
+
+        // Crop Info Logic
+        function showCropInfo(cropName) {
+            const info = {
+                'Papa': 'Fundamental para la seguridad alimentaria en Bolivia, con más de 1,500 variedades locales cultivadas principalmente en la zona andina. Es el cultivo con mayor superficie y consumo en el país.',
+                'Maíz': 'Cultivo vital presente en los valles, llanos y el Chaco. Es esencial tanto para el consumo humano tradicional como para la cadena de producción de proteína animal.',
+                'Quinua': 'El "Grano de Oro" de los Andes. Bolivia es líder mundial en exportación de quinua real, destacando su producción orgánica y sostenible en el Altiplano sur.',
+                'Uva': 'Eje central de la economía en los valles de Tarija y Cinti, sustentando la industria de vinos de altura y el Singani, producto con denominación de origen boliviana.',
+                'Durazno': 'De gran importancia económica para los pequeños productores de los valles interandinos, con Cochabamba y Chuquisaca como principales centros de abastecimiento nacional.',
+                'Tomate': 'Especie hortícola clave producida bajo diversos sistemas (campo abierto y carpas solares) para satisfacer la demanda constante del mercado nacional.',
+                'Café': 'Producto de exportación de altísima calidad. Los cafés especiales de las Yungas paceñas son reconocidos internacionalmente en competencias de excelencia.',
+                'Cebolla': 'Hortaliza básica en la dieta nacional, con una producción creciente en valles y cabeceras de valle que permite incluso la exportación regional.'
+            };
+            
+            const infoBox = document.getElementById('crop-info-box');
+            const infoContent = document.getElementById('crop-info-content');
+            const cards = document.querySelectorAll('.crop-card');
+            
+            // Toggle active state
+            cards.forEach(c => {
+                if(c.innerText.trim() === cropName) {
+                    c.classList.add('active');
+                } else {
+                    c.classList.remove('active');
+                }
+            });
+
+            infoContent.innerHTML = `<strong>${cropName}</strong> ${info[cropName]}`;
+            infoBox.style.display = 'block';
         }
     </script>
 </body>
