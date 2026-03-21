@@ -582,8 +582,95 @@
             font-weight: 600;
             border: 1px solid var(--border-color);
         }
+        /* Data Explorer */
+        .explorer-container {
+            display: flex;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-top: 2rem;
+            min-height: 500px;
+        }
+
+        .explorer-sidebar {
+            width: 300px;
+            background-color: #f8fafc;
+            border-right: 1px solid var(--border-color);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .explorer-main {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+        }
+
+        .explorer-img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            margin-top: 1rem;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 700;
+            color: var(--dark-bg);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            background-color: #ffffff;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .explorer-btn {
+            background-color: var(--cat-green);
+            color: #ffffff;
+            border: none;
+            padding: 1rem;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: auto;
+        }
+
+        .explorer-btn:hover {
+            background-color: #4a8031;
+        }
 
         @media (max-width: 768px) {
+            .explorer-container {
+                flex-direction: column;
+            }
+            .explorer-sidebar {
+                width: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
             nav {
                 flex-direction: column;
                 padding: 1rem;
@@ -611,7 +698,7 @@
             <li><a href="#presentacion">Presentación</a></li>
             <li><a href="#componentes">Metodología</a></li>
             <li><a href="#reportes">Reportes</a></li>
-            <li><a href="#codigo">Código</a></li>
+            <li><a href="#explorar">Explorar Datos</a></li>
             <li><a href="#apendices">Apéndices</a></li>
         </ul>
     </nav>
@@ -854,18 +941,54 @@
         </a>
     </section>
 
-    <section id="codigo">
-        <h2 class="section-title">Código Reproducible</h2>
-        <span class="source-cite">&lt;!-- Source: Archivos de código (.R, .py) no encontrados --&gt;</span>
-        <p>Todos los flujos de procesamiento de datos, definición de umbrales y modelado del Motor de Pronóstico y Alertas se encuentran documentados aquí para asegurar la reproducibilidad científica.</p>
+    <section id="explorar">
+        <h2 class="section-title">Explorador de Datos</h2>
+        <p style="font-size: 1.1rem; max-width: 800px;">Herramienta interactiva para visualizar modelos agroclimáticos, mapas espaciales de vulnerabilidad y proyecciones de riesgo a nivel municipal.</p>
         
-        <div class="pending">
-            [Contenido pendiente — no disponible en archivos fuente]
+        <div class="explorer-container">
+            <div class="explorer-sidebar">
+                <h3 style="margin:0 0 0.5rem 0; font-size: 1.2rem; color: var(--dark-bg);">Filtros Dinámicos</h3>
+                <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0;">Selecciona las variables para actualizar el mapa interactivo.</p>
+                
+                <div class="filter-group">
+                    <label>Cultivo de Interés</label>
+                    <select>
+                        <option>Papa (Solanum tuberosum)</option>
+                        <option>Maíz (Zea mays)</option>
+                        <option>Quinua (Chenopodium quinoa)</option>
+                        <option>Café (Coffea arabica)</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Plaga / Enfermedad</label>
+                    <select>
+                        <option>Tizón Tardío (Phytophthora infestans)</option>
+                        <option>Roya del Cafeto</option>
+                        <option>Gusano Cogollero</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Escenario Temporal</label>
+                    <select>
+                        <option>Pronóstico Estacional (Oct 2026)</option>
+                        <option>Línea Base Histórica</option>
+                        <option>Fenómeno El Niño</option>
+                    </select>
+                </div>
+                
+                <button class="explorer-btn">Actualizar Mapa</button>
+            </div>
+            <div class="explorer-main">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; color: var(--dark-bg);">Índice de Vulnerabilidad: Tizón Tardío</h3>
+                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--cat-orange); background: #fff8f1; padding: 4px 10px; border-radius: 4px; border: 1px solid var(--cat-orange);">Riesgo Elevado</span>
+                </div>
+                <img class="explorer-img" src="figures/data_explorer_map.png" alt="Mapa de calor de riesgo en Bolivia">
+                <p style="font-size: 0.85rem; color: #888; text-align: right; margin-top: 10px; font-style: italic;">* Los datos espaciales son proyecciones del modelo de inteligencia agroclimática.</p>
+            </div>
         </div>
-        
-        <!-- Ejemplo de bloque de código vacío en espera de archivos locales -->
-        <pre><code># Bloque de código reservado para scripts R / Python locales
-# [Contenido pendiente — no disponible en archivos fuente]</code></pre>
     </section>
 
     <section id="apendices" class="light-bg">
