@@ -29,9 +29,17 @@
             padding: 0;
             font-family: var(--font-family);
             color: var(--text-color);
-            background-color: var(--light-bg);
+            background: linear-gradient(135deg, #f4f7fa, #edf5ef, #fcfbf4, #eef3f7);
+            background-size: 300% 300%;
+            animation: AmbientGlow 25s ease infinite;
             line-height: 1.6;
             scroll-behavior: smooth;
+        }
+
+        @keyframes AmbientGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
 
@@ -237,12 +245,14 @@
         }
 
         section.light-bg {
-            background-color: #ffffff;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            background-color: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.04);
             margin-top: 2rem;
             margin-bottom: 2rem;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
 
         h2.section-title {
@@ -337,10 +347,12 @@
         }
 
         .card {
-            background: #ffffff;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            border: 1px solid rgba(255, 255, 255, 0.8);
             transition: transform 0.2s, box-shadow 0.2s;
             overflow: hidden;
             display: flex;
@@ -354,8 +366,8 @@
         
         .card-header {
             padding: 1.5rem 1.5rem 1rem 1.5rem;
-            background-color: #ffffff;
-            border-bottom: 1px solid var(--border-color);
+            background-color: transparent;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
         .card-body {
