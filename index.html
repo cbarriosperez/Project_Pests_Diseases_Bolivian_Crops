@@ -661,6 +661,131 @@
             background-color: #4a8031;
         }
 
+        /* Timeline inside Calendario */
+        .project-timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 2rem 0 4rem 1rem;
+            padding-left: 2rem;
+            border-left: 3px solid var(--cat-light-green);
+        }
+        .timeline-step {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: -2.7rem;
+            top: 0;
+            width: 1rem;
+            height: 1rem;
+            background-color: #ffffff;
+            border: 3px solid var(--cat-green);
+            border-radius: 50%;
+        }
+        .timeline-step-date {
+            font-size: 0.85rem;
+            color: var(--cat-green);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .timeline-step-title {
+            font-size: 1.15rem;
+            color: var(--dark-bg);
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+        }
+
+        /* IPCC Style Events List */
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .event-card {
+            display: flex;
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            transition: box-shadow 0.2s;
+        }
+        .event-card:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+        .event-date-block {
+            background-color: #f7f9fb;
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem 1rem;
+            min-width: 120px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .event-month {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+        }
+        .event-days {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--dark-bg);
+            line-height: 1;
+            margin: 0.25rem 0;
+        }
+        .event-year {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        .event-details {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .event-title {
+            font-size: 1.25rem;
+            color: var(--dark-bg);
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+        }
+        .event-meta {
+            font-size: 0.9rem;
+            color: #666;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .event-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .event-badge {
+            background-color: var(--cat-green);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .event-badge.virtual {
+            background-color: var(--cat-yellow);
+            color: var(--dark-bg);
+        }
+
         @media (max-width: 768px) {
             .explorer-container {
                 flex-direction: column;
@@ -699,7 +824,7 @@
             <li><a href="#componentes">Metodología</a></li>
             <li><a href="#reportes">Reportes</a></li>
             <li><a href="#explorar">Explorar Datos</a></li>
-            <li><a href="#apendices">Apéndices</a></li>
+            <li><a href="#calendario">Calendario</a></li>
         </ul>
     </nav>
 
@@ -991,13 +1116,100 @@
         </div>
     </section>
 
-    <section id="apendices" class="light-bg">
-        <h2 class="section-title">Apéndices</h2>
-        <span class="source-cite">&lt;!-- Source: Datasets y figuras adicionales no encontradas --&gt;</span>
-        <p>Material complementario, conjuntos de datos (datasets) e imágenes de alta resolución referenciados en la documentación principal.</p>
-        
-        <div class="pending">
-            [Contenido pendiente — no disponible en archivos fuente]
+    <section id="calendario" class="light-bg">
+        <h2 class="section-title">Calendario y Plan de Trabajo</h2>
+        <p style="font-size: 1.1rem; max-width: 800px; margin-bottom: 3rem;">Visualiza el horizonte temporal del proyecto, junto con los eventos clave, reuniones y talleres programados con los actores regionales en Bolivia.</p>
+
+        <!-- Timeline Section -->
+        <h3 style="color: var(--dark-bg); margin-bottom: 1.5rem;">Plan de Trabajo General (2026)</h3>
+        <div class="project-timeline">
+            <div class="timeline-step">
+                <span class="timeline-step-date">Febrero - Marzo</span>
+                <h4 class="timeline-step-title">Fase 1: Línea Base y Zonas Geográficas</h4>
+                <p style="margin:0; font-size:0.95rem; color:var(--text-light);">Identificación de áreas de producción agrícola y validación de plagas prioritarias. (Actividades 1 y 2)</p>
+            </div>
+            <div class="timeline-step">
+                <span class="timeline-step-date">Abril - Junio</span>
+                <h4 class="timeline-step-title">Fase 2: Indicadores y Modelado Espacial</h4>
+                <p style="margin:0; font-size:0.95rem; color:var(--text-light);">Generación de índices agroclimáticos y mapeo de alta resolución espaciotemporal. (Actividades 3 y 4)</p>
+            </div>
+            <div class="timeline-step">
+                <span class="timeline-step-date">Julio - Octubre</span>
+                <h4 class="timeline-step-title">Fase 3: Motor de Alertas y Pronósticos</h4>
+                <p style="margin:0; font-size:0.95rem; color:var(--text-light);">Implementación de pronósticos estacionales y despliegue del motor de Alertas Tempranas. (Actividad 5)</p>
+            </div>
+        </div>
+
+        <!-- IPCC Style Event Calendar -->
+        <h3 style="color: var(--dark-bg); margin-top: 4rem; margin-bottom: 1.5rem;">Agenda de Eventos y Talleres</h3>
+        <div class="event-list">
+            <!-- Event 1 -->
+            <div class="event-card">
+                <div class="event-date-block">
+                    <span class="event-month">Feb</span>
+                    <span class="event-days">16-18</span>
+                    <span class="event-year">2026</span>
+                </div>
+                <div class="event-details">
+                    <h4 class="event-title">Inception Workshop: Lanzamiento Oficial del Proyecto</h4>
+                    <div class="event-meta">
+                        <span class="event-badge">Presencial</span>
+                        <span class="event-meta-item">📍 Cochabamba, Bolivia</span>
+                        <span class="event-meta-item">👥 CIAT, YAPU, Socios Locales</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event 2 -->
+            <div class="event-card">
+                <div class="event-date-block">
+                    <span class="event-month">May</span>
+                    <span class="event-days">20</span>
+                    <span class="event-year">2026</span>
+                </div>
+                <div class="event-details">
+                    <h4 class="event-title">Mesa Técnica: Validación de Indicadores Agroclimáticos</h4>
+                    <div class="event-meta">
+                        <span class="event-badge virtual">Virtual</span>
+                        <span class="event-meta-item">💻 Plataforma Teams</span>
+                        <span class="event-meta-item">👥 Agrónomos, Extensionistas</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event 3 -->
+            <div class="event-card">
+                <div class="event-date-block">
+                    <span class="event-month">Ago</span>
+                    <span class="event-days">10-14</span>
+                    <span class="event-year">2026</span>
+                </div>
+                <div class="event-details">
+                    <h4 class="event-title">Capacitación en Campo: Uso temprano de Alertas de Vulnerabilidad</h4>
+                    <div class="event-meta">
+                        <span class="event-badge">Presencial</span>
+                        <span class="event-meta-item">📍 Santa Cruz y Tarija</span>
+                        <span class="event-meta-item">👥 Productores Locales</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Event 4 -->
+            <div class="event-card">
+                <div class="event-date-block">
+                    <span class="event-month">Oct</span>
+                    <span class="event-days">28</span>
+                    <span class="event-year">2026</span>
+                </div>
+                <div class="event-details">
+                    <h4 class="event-title">Entrega Final y Cierre Operativo</h4>
+                    <div class="event-meta">
+                        <span class="event-badge" style="background:#232d39;">Hito</span>
+                        <span class="event-meta-item">📍 La Paz, Bolivia</span>
+                        <span class="event-meta-item">👥 Alliance Bioversity</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
