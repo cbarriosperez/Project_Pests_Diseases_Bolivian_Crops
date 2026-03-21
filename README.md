@@ -17,3 +17,10 @@ El objetivo principal de este proyecto es proporcionar un recurso accesible y ce
 - **Enfoque Local:** Datos y descripciones contextualizadas a las regiones geográficas y cultivos específicos de Bolivia.
 - **Diseño Responsivo:** Interfaz accesible desde dispositivos móviles y computadoras de escritorio.
 
+## 👨‍💻 Autor
+Desarrollado y mantenido por **[Camilo Barrios-Pérez](https://github.com/cbarriosperez)**.
+
+Si esta plataforma te ha sido útil, ¡no dudes en darle una ⭐ al repositorio!
+
+
+
