@@ -786,6 +786,51 @@
             color: var(--dark-bg);
         }
 
+        /* Event Filters */
+        .event-filters {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 1rem 1.5rem;
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .filter-item label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--dark-bg);
+            text-transform: uppercase;
+        }
+        .event-filters select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background-color: #ffffff;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+        .event-card.hidden {
+            display: none;
+        }
+        #no-events-msg {
+            padding: 2rem;
+            text-align: center;
+            background: #f1f5f9;
+            border-radius: 4px;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
             .explorer-container {
                 flex-direction: column;
@@ -1142,9 +1187,33 @@
 
         <!-- IPCC Style Event Calendar -->
         <h3 style="color: var(--dark-bg); margin-top: 4rem; margin-bottom: 1.5rem;">Agenda de Eventos y Talleres</h3>
-        <div class="event-list">
+        
+        <div class="event-filters">
+            <div class="filter-item">
+                <label for="month-filter">Filtrar por Mes:</label>
+                <select id="month-filter" onchange="filterEvents()">
+                    <option value="all">Ver todos los meses</option>
+                    <option value="Feb">Febrero</option>
+                    <option value="May">Mayo</option>
+                    <option value="Ago">Agosto</option>
+                    <option value="Oct">Octubre</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label for="type-filter">Tipo de Actividad:</label>
+                <select id="type-filter" onchange="filterEvents()">
+                    <option value="all">Todas las categorías</option>
+                    <option value="Taller">Talleres / Workshops</option>
+                    <option value="Reunion">Mesas Técnicas / Reuniones</option>
+                    <option value="Capacitacion">Capacitaciones de Campo</option>
+                    <option value="Hito">Hitos del Proyecto</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="event-list" id="event-list-container">
             <!-- Event 1 -->
-            <div class="event-card">
+            <div class="event-card" data-month="Feb" data-type="Taller">
                 <div class="event-date-block">
                     <span class="event-month">Feb</span>
                     <span class="event-days">16-18</span>
@@ -1161,7 +1230,7 @@
             </div>
 
             <!-- Event 2 -->
-            <div class="event-card">
+            <div class="event-card" data-month="May" data-type="Reunion">
                 <div class="event-date-block">
                     <span class="event-month">May</span>
                     <span class="event-days">20</span>
@@ -1178,7 +1247,7 @@
             </div>
 
             <!-- Event 3 -->
-            <div class="event-card">
+            <div class="event-card" data-month="Ago" data-type="Capacitacion">
                 <div class="event-date-block">
                     <span class="event-month">Ago</span>
                     <span class="event-days">10-14</span>
@@ -1195,7 +1264,7 @@
             </div>
             
             <!-- Event 4 -->
-            <div class="event-card">
+            <div class="event-card" data-month="Oct" data-type="Hito">
                 <div class="event-date-block">
                     <span class="event-month">Oct</span>
                     <span class="event-days">28</span>
@@ -1210,6 +1279,8 @@
                     </div>
                 </div>
             </div>
+            
+            <div id="no-events-msg" style="display: none;">No se encontraron eventos para los filtros seleccionados.</div>
         </div>
     </section>
 
@@ -1300,6 +1371,36 @@
         
         // Start auto slide
         resetTimer();
+
+        // Calendar Filtering Logic
+        function filterEvents() {
+            const selectedMonth = document.getElementById('month-filter').value;
+            const selectedType = document.getElementById('type-filter').value;
+            const cards = document.querySelectorAll('.event-card');
+            const noEventsMsg = document.getElementById('no-events-msg');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const cardMonth = card.getAttribute('data-month');
+                const cardType = card.getAttribute('data-type');
+
+                const monthMatch = (selectedMonth === 'all' || cardMonth === selectedMonth);
+                const typeMatch = (selectedType === 'all' || cardType === selectedType);
+
+                if (monthMatch && typeMatch) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            if (visibleCount === 0) {
+                noEventsMsg.style.display = 'block';
+            } else {
+                noEventsMsg.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
