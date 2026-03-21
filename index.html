@@ -452,6 +452,159 @@
             line-height: 1.7;
         }
 
+        /* Methodology Interactive Stepper */
+        .methodology-container {
+            display: flex;
+            gap: 2.5rem;
+            margin-top: 3rem;
+            min-height: 520px;
+        }
+        .methodology-steps {
+            flex: 0 0 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .step-item {
+            padding: 1.25rem 1.5rem;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .step-item:hover {
+            border-color: var(--cat-light-green);
+            background-color: #f7fafc;
+        }
+        .step-item.active {
+            border-color: var(--cat-green);
+            background-color: #f0fdf4;
+            box-shadow: 0 4px 15px rgba(100, 168, 68, 0.12);
+            transform: translateX(15px);
+        }
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background-color: #f1f5f9;
+            color: var(--text-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+            transition: all 0.3s;
+            border: 1px solid var(--border-color);
+        }
+        .step-item.active .step-number {
+            background-color: var(--cat-green);
+            color: #ffffff;
+            border-color: var(--cat-green);
+            box-shadow: 0 2px 8px rgba(100, 168, 68, 0.3);
+        }
+        .step-title-small {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--dark-bg);
+            line-height: 1.3;
+        }
+
+        .methodology-content {
+            flex: 1;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 3rem;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.04);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .methodology-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background-color: var(--cat-green);
+        }
+        
+        .step-detail-view {
+            animation: slideInRightMethod 0.5s ease-out;
+            display: none;
+        }
+        .step-detail-view.active {
+            display: block;
+        }
+        @keyframes slideInRightMethod {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .method-badge {
+            display: inline-block;
+            padding: 5px 14px;
+            background: #f0fdf4;
+            border: 1px solid #dcfce7;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--cat-green);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .methodology-content h3 {
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-bg);
+        }
+        
+        .method-section-title {
+            font-weight: 700;
+            color: var(--cat-green);
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .method-deliverable {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+        
+        @media (max-width: 992px) {
+            .methodology-container {
+                flex-direction: column;
+            }
+            .methodology-steps {
+                flex: none;
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 1rem;
+            }
+            .step-item {
+                flex: 0 0 auto;
+                transform: none !important;
+                white-space: nowrap;
+            }
+        }
+
         /* Code Blocks */
         pre {
             background-color: var(--dark-bg);
@@ -1017,117 +1170,107 @@
 
     <section id="componentes">
         <h2 class="section-title">Metodología y Actividades</h2>
-        <p>El sistema se ha construido a lo largo de 5 actividades interconectadas, partiendo desde la definición territorial hasta la operación del motor de alertas.</p>
+        <p style="max-width: 800px; font-size: 1.1rem; margin-bottom: 0;">El sistema se ha construido a lo largo de 5 actividades interconectadas. Explora cada fase de la metodología haciendo clic en el panel lateral.</p>
 
-        <div class="grid">
-            <!-- Componente 1 -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="timeline-badge">Actividad 1</span>
+        <div class="methodology-container">
+            <!-- Navigation Steps -->
+            <div class="methodology-steps">
+                <div class="step-item active" onclick="showMethodologyStep(1)">
+                    <div class="step-number">1</div>
+                    <div class="step-title-small">Definición Territorial y Cultivos</div>
+                </div>
+                <div class="step-item" onclick="showMethodologyStep(2)">
+                    <div class="step-number">2</div>
+                    <div class="step-title-small">Identificación de Amenazas</div>
+                </div>
+                <div class="step-item" onclick="showMethodologyStep(3)">
+                    <div class="step-number">3</div>
+                    <div class="step-title-small">Indicadores Agroclimáticos</div>
+                </div>
+                <div class="step-item" onclick="showMethodologyStep(4)">
+                    <div class="step-number">4</div>
+                    <div class="step-title-small">Modelado de Vulnerabilidad</div>
+                </div>
+                <div class="step-item" onclick="showMethodologyStep(5)">
+                    <div class="step-number">5</div>
+                    <div class="step-title-small">Pronóstico y Alertas</div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="methodology-content">
+                <!-- Step 1 Info -->
+                <div id="method-step-1" class="step-detail-view active">
+                    <span class="method-badge">Fase de Inicio</span>
                     <h3>Definición de Cultivos de Interés y Áreas de Estudio</h3>
-                </div>
-                <div class="card-body">
-                    <button class="accordion">Objetivo y Proceso</button>
-                    <div class="panel">
-                        <p><strong>Objetivo:</strong> Identificar las principales áreas agrícolas y cultivos clave para el análisis de plagas y enfermedades en Bolivia.</p>
-                        <p><strong>Proceso:</strong> Análisis exhaustivo de datos agrícolas de fuentes oficiales (INE, Ministerio de Desarrollo Rural) e internacionales (FAOSTAT). Se clasifica la información según la actividad agrícola predominante para seleccionar cultivos clave.</p>
-                        <p>Posteriormente, se realiza un análisis espacial con Sistemas de Información Geográfica (SIG) para delinear áreas de producción por municipio, basándose en la importancia económica y vulnerabilidad.</p>
-                    </div>
                     
-                    <button class="accordion">Entregables (Work Plan)</button>
-                    <div class="panel">
-                        <div class="deliverable-box">
-                            <strong>Entregable 1:</strong> Informe inicial resumido (Short-form inception report), incluyendo análisis de datos por BDP y una extrapolación de las implicaciones para el proyecto.
-                        </div>
+                    <div class="method-section-title">Objetivo y Proceso</div>
+                    <p>Identificar las principales áreas agrícolas y cultivos clave para el análisis de plagas y enfermedades en Bolivia. Se parte de un análisis exhaustivo de datos agrícolas de fuentes oficiales (INE, MDRyT) e internacionales (FAOSTAT).</p>
+                    <p>Utilizamos Sistemas de Información Geográfica (SIG) para delinear áreas de producción por municipio, priorizando por importancia socioeconómica y exposición climática.</p>
+                    
+                    <div class="method-deliverable">
+                        <div class="method-section-title" style="margin-top:0">Entregables</div>
+                        <p style="margin-bottom:0"><strong>Informe Inception:</strong> Análisis de datos BDP y extrapolación de implicaciones para la seguridad alimentaria regional.</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Componente 2 -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="timeline-badge">Actividad 2</span>
+                <!-- Step 2 Info -->
+                <div id="method-step-2" class="step-detail-view">
+                    <span class="method-badge">Análisis Epidemiológico</span>
                     <h3>Identificación de Principales Plagas y Enfermedades</h3>
-                </div>
-                <div class="card-body">
-                    <button class="accordion">Objetivo y Proceso</button>
-                    <div class="panel">
-                        <p><strong>Objetivo:</strong> Determinar las plagas y enfermedades más relevantes que afectan a los cultivos seleccionados, identificando condiciones climáticas y agronómicas favorables.</p>
-                        <p><strong>Proceso:</strong> Revisión sistemática de literatura científica, bases de datos y reportes técnicos para desarrollar un perfil de cada amenaza (ciclo de vida, síntomas, umbrales críticos de temperatura y humedad).</p>
-                        <p>Esto se complementa con entrevistas y encuestas a agrónomos y extensionistas locales para validar la información y priorizar las amenazas con mayor impacto económico y agronómico.</p>
-                    </div>
-                    <button class="accordion">Entregables (Work Plan)</button>
-                    <div class="panel">
-                        <div class="deliverable-box">
-                            <strong>Catálogo Consolidado:</strong> Catálogo de plagas y enfermedades, incluyendo un resumen de condiciones ambientales y umbrales críticos.
-                        </div>
+                    
+                    <div class="method-section-title">Objetivo y Proceso</div>
+                    <p>Determinar las plagas y enfermedades más relevantes que afectan a los cultivos seleccionados. Se desarrolla un perfil biológico de cada amenaza, incluyendo ciclo de vida y síntomas.</p>
+                    <p>Este análisis se valida mediante encuestas a expertos agrónomos y técnicos locales bolivianos para priorizar aquellas amenazas con mayor impacto en el rendimiento de los cultivos.</p>
+                    
+                    <div class="method-deliverable">
+                        <div class="method-section-title" style="margin-top:0">Entregables</div>
+                        <p style="margin-bottom:0"><strong>Catálogo de Plagas:</strong> Compendio detallado de condiciones ambientales óptimas y umbrales críticos para cada patógeno.</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Componente 3 -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="timeline-badge">Actividad 3</span>
+                <!-- Step 3 Info -->
+                <div id="method-step-3" class="step-detail-view">
+                    <span class="method-badge">Ingeniería de Datos</span>
                     <h3>Generación de Indicadores Agroclimáticos</h3>
-                </div>
-                <div class="card-body">
-                    <button class="accordion">Objetivo y Proceso</button>
-                    <div class="panel">
-                        <p><strong>Objetivo:</strong> Desarrollar indicadores que representen las condiciones ambientales favorables para la aparición de las plagas y enfermedades identificadas.</p>
-                        <p><strong>Proceso:</strong> Recopilación de datos climáticos históricos (CHIRPS y AgERA5) analizados junto con registros de incidencia. Se establecen umbrales críticos y se identifican secuencias de eventos (ej. alta humedad seguida de temperaturas cálidas) utilizando análisis multivariable.</p>
-                        <p>Los indicadores se validan con datos de campo y expertos locales para su uso en algoritmos de alerta temprana.</p>
-                    </div>
-                    <button class="accordion">Entregables (Work Plan)</button>
-                    <div class="panel">
-                        <div class="deliverable-box">
-                            <strong>Entregable 1:</strong> Paquete de índices de riesgo agroclimático: Definiciones de umbrales y algoritmos (temperatura, precipitación, humedad) para calcular riesgos, incluyendo pasos de validación.
-                        </div>
+                    
+                    <div class="method-section-title">Objetivo y Proceso</div>
+                    <p>Desarrollar indicadores bio-meteorológicos que representen las condiciones favorables para la aparición de plagas. Se utilizan datos históricos de CHIRPS (precipitación) y AgERA5 (temperatura/humedad).</p>
+                    <p>Mediante análisis multivariable, se establecen los algoritmos que detectan secuencias climáticas de riesgo, calibrados con registros históricos de incidencia en campo.</p>
+                    
+                    <div class="method-deliverable">
+                        <div class="method-section-title" style="margin-top:0">Entregables</div>
+                        <p style="margin-bottom:0"><strong>Paquete de Índices:</strong> Algoritmos validados de riesgo agroclimático, listos para procesamiento automatizado.</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Componente 4 -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="timeline-badge">Actividad 4</span>
+                <!-- Step 4 Info -->
+                <div id="method-step-4" class="step-detail-view">
+                    <span class="method-badge">Análisis Espacial</span>
                     <h3>Análisis Espacio-temporal de Vulnerabilidad</h3>
-                </div>
-                <div class="card-body">
-                    <button class="accordion">Objetivo y Proceso</button>
-                    <div class="panel">
-                        <p><strong>Objetivo:</strong> Evaluar la vulnerabilidad espacial y temporal de las regiones agrícolas a plagas y enfermedades mediante los indicadores agroclimáticos.</p>
-                        <p><strong>Proceso:</strong> Análisis con una resolución espacial de 5 km utilizando bases de datos secundarias estandarizadas. Se mapean áreas históricamente favorables creando zonas de alto riesgo.</p>
-                        <p>También se analiza el comportamiento de los indicadores durante eventos climáticos extremos asociados a <em>El Niño</em> y <em>La Niña</em> para desarrollar estrategias de manejo específicas.</p>
-                    </div>
-                    <button class="accordion">Entregables (Work Plan)</button>
-                    <div class="panel">
-                        <div class="deliverable-box">
-                            <strong>Entregable 1:</strong> Mapas de vulnerabilidad y analítica: Mapas de riesgo espaciotemporal ilustrando puntos críticos históricos y patrones de riesgo bajo condiciones extremas (El Niño/La Niña).
-                        </div>
+                    
+                    <div class="method-section-title">Objetivo y Proceso</div>
+                    <p>Evaluar la vulnerabilidad de las regiones agrícolas bolivianas con una resolución espacial de 5 km. Se integran los índices agroclimáticos con mapas de uso de suelo actualizados.</p>
+                    <p>El resultado es una zonificación dinámica que identifica áreas de alto riesgo basándose en la coincidencia de etapas críticas del cultivo y condiciones climáticas extremas.</p>
+                    
+                    <div class="method-deliverable">
+                        <div class="method-section-title" style="margin-top:0">Entregables</div>
+                        <p style="margin-bottom:0"><strong>Mapas de Vulnerabilidad:</strong> Capas geoespaciales de alta resolución que muestran el perfil histórico de susceptibilidad.</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Componente 5 -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="timeline-badge">Actividad 5</span>
+                <!-- Step 5 Info -->
+                <div id="method-step-5" class="step-detail-view">
+                    <span class="method-badge">Servicio de Alerta</span>
                     <h3>Pronósticos Estacionales y Evaluación del Riesgo</h3>
-                </div>
-                <div class="card-body">
-                    <button class="accordion">Objetivo y Proceso</button>
-                    <div class="panel">
-                        <p><strong>Objetivo:</strong> Generar pronósticos climáticos estacionales y evaluar su impacto en el riesgo de plagas para proveer alertas tempranas a los agricultores.</p>
-                        <p><strong>Proceso:</strong> Uso de Análisis de Correlación Canónica (CCA) para pronósticos estacionales. Se aplica un método de remuestreo histórico para traducir pronósticos probabilísticos a datos determinísticos diarios.</p>
-                        <p>Con estos datos se calculan los indicadores agroclimáticos futuros para identificar áreas vulnerables y planificar medidas preventivas oportunamente.</p>
-                    </div>
-                    <button class="accordion">Entregables (Work Plan)</button>
-                    <div class="panel">
-                        <div class="deliverable-box">
-                            <strong>Entregable 1:</strong> Perspectivas de riesgo basadas en pronósticos estacionales y alertas tempranas.<br><br>
-                            <strong>Entregable 2:</strong> Motor de pronóstico y alertas (Forecasting and Alerts Engine): Código documentado y rutinas paso a paso que integran datos meteorológicos y reglas de cultivos, listo para integración con plataformas existentes.
-                        </div>
+                    
+                    <div class="method-section-title">Objetivo y Proceso</div>
+                    <p>Implementar el motor de pronóstico utilizando Análisis de Correlación Canónica (CCA) para predecir condiciones a escala estacional.</p>
+                    <p>Los pronósticos se traducen a alertas tempranas accionables, permitiendo a las instituciones gubernamentales y productores planificar medidas preventivas antes de la aparición del brote.</p>
+                    
+                    <div class="method-deliverable">
+                        <div class="method-section-title" style="margin-top:0">Entregables</div>
+                        <p style="margin-bottom:0"><strong>Motor SAT (Forecasting Engine):</strong> Código documentado y rutinas operativas integrables para la emisión periódica de alertas.</p>
                     </div>
                 </div>
             </div>
@@ -1490,6 +1633,20 @@
 
             infoContent.innerHTML = `<strong>${cropName}</strong> ${info[cropName]}`;
             infoBox.style.display = 'block';
+        }
+
+        // Methodology Stepper Logic
+        function showMethodologyStep(stepNumber) {
+            const steps = document.querySelectorAll('.step-item');
+            const details = document.querySelectorAll('.step-detail-view');
+            
+            // Remove active class from all steps and details
+            steps.forEach(s => s.classList.remove('active'));
+            details.forEach(d => d.classList.remove('active'));
+            
+            // Add active class to selected step and detail
+            steps[stepNumber-1].classList.add('active');
+            details[stepNumber-1].classList.add('active');
         }
     </script>
 </body>
