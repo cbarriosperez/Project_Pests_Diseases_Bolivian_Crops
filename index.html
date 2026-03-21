@@ -494,6 +494,94 @@
         }
 
 
+        /* Publications / Reports */
+        .publication-card {
+            display: flex;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .publication-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+            border-color: #d1d5db;
+        }
+
+        .publication-image {
+            width: 25%;
+            min-width: 220px;
+            background-color: var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .publication-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .publication-card:hover .publication-image img {
+            transform: scale(1.03);
+        }
+
+        .publication-content {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .publication-date {
+            font-size: 0.85rem;
+            color: #888888;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .publication-title {
+            font-size: 1.5rem;
+            color: var(--dark-bg);
+            font-weight: 700;
+            margin: 0 0 1rem 0;
+            line-height: 1.3;
+            transition: color 0.2s;
+        }
+
+        .publication-card:hover .publication-title {
+            color: var(--cat-green);
+        }
+
+        .publication-summary {
+            font-size: 1rem;
+            color: #555555;
+            margin: 0 0 1.5rem 0;
+            line-height: 1.6;
+        }
+
+        .publication-tag {
+            display: inline-block;
+            background-color: #f1f5f9;
+            color: var(--dark-bg);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+        }
 
         @media (max-width: 768px) {
             nav {
@@ -522,7 +610,7 @@
         <ul>
             <li><a href="#presentacion">Presentación</a></li>
             <li><a href="#componentes">Metodología</a></li>
-            <li><a href="#resultados">Resultados</a></li>
+            <li><a href="#reportes">Reportes</a></li>
             <li><a href="#codigo">Código</a></li>
             <li><a href="#apendices">Apéndices</a></li>
         </ul>
@@ -729,14 +817,41 @@
         </div>
     </section>
 
-    <section id="resultados" class="light-bg">
-        <h2 class="section-title">Resultados</h2>
-        <span class="source-cite">&lt;!-- Source: Archivos de resultados no encontrados --&gt;</span>
-        <p>Esta sección consolida las tablas, mapas referenciados y gráficos generados para cada componente.</p>
+    <section id="reportes">
+        <h2 class="section-title">Reportes y Publicaciones</h2>
+        <p style="margin-bottom: 2.5rem; font-size: 1.1rem;">Documentación técnica, análisis de línea base y reportes epidemiológicos generados a lo largo del proyecto para su consulta pública y descarga.</p>
         
-        <div class="pending">
-            [Contenido pendiente — no disponible en archivos fuente]
-        </div>
+        <!-- Publication 1 -->
+        <a href="#detalles_reporte_1" class="publication-card">
+            <div class="publication-image">
+                <img src="figures/cover_baseline.png" alt="Portada Reporte Línea Base">
+            </div>
+            <div class="publication-content">
+                <div class="publication-date">15 Mayo 2026</div>
+                <h3 class="publication-title">Reporte inicial de línea base y zonas de riesgo</h3>
+                <p class="publication-summary">Análisis comprensivo de las áreas de producción agrícola en Bolivia vulnerables a plagas específicas. Incluye cruce de datos históricos climáticos y delimitación de focos epidemiológicos primarios.</p>
+                <div>
+                    <span class="publication-tag">Reporte Técnico</span>
+                    <span class="publication-tag" style="margin-left:8px;">Actividad 1</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Publication 2 -->
+        <a href="#detalles_reporte_2" class="publication-card">
+            <div class="publication-image">
+                <img src="figures/cover_epidemiology.png" alt="Portada Análisis Epidemiológico">
+            </div>
+            <div class="publication-content">
+                <div class="publication-date">22 Agosto 2026</div>
+                <h3 class="publication-title">Análisis Epidemiológico y Umbrales Críticos</h3>
+                <p class="publication-summary">Estudio detallado del comportamiento de las principales plagas (Roya, Tizón Tardío) bajo diferentes escenarios de humedad y temperatura. Establecimiento de los umbrales de alerta temprana.</p>
+                <div>
+                    <span class="publication-tag">Estudio Científico</span>
+                    <span class="publication-tag" style="margin-left:8px;">Actividad 2</span>
+                </div>
+            </div>
+        </a>
     </section>
 
     <section id="codigo">
