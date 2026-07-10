@@ -291,7 +291,7 @@
         /* Updated Crop Icons & Interactivity */
         .crop-grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
+            grid-template-columns: repeat(7, 1fr);
             gap: 0.75rem;
             margin-top: 1.5rem;
         }
@@ -1111,29 +1111,13 @@
             <p style="color: var(--text-color); max-width: 900px;">El proyecto se enfoca en las principales áreas agrícolas de Bolivia, analizando cultivos esenciales para la economía y seguridad alimentaria. Haz clic en cada cultivo para conocer su relevancia estratégica:</p>
             
             <div class="crop-grid">
-                <div class="crop-card" onclick="showCropInfo('Papa')">
-                    <span class="emoji">🥔</span>
-                    <span>Papa</span>
+                <div class="crop-card" onclick="showCropInfo('Ajo')">
+                    <span class="emoji">🧄</span>
+                    <span>Ajo</span>
                 </div>
-                <div class="crop-card" onclick="showCropInfo('Maíz')">
-                    <span class="emoji">🌽</span>
-                    <span>Maíz</span>
-                </div>
-                <div class="crop-card" onclick="showCropInfo('Quinua')">
-                    <span class="emoji">🌾</span>
-                    <span>Quinua</span>
-                </div>
-                <div class="crop-card" onclick="showCropInfo('Uva')">
-                    <span class="emoji">🍇</span>
-                    <span>Uva</span>
-                </div>
-                <div class="crop-card" onclick="showCropInfo('Durazno')">
-                    <span class="emoji">🍑</span>
-                    <span>Durazno</span>
-                </div>
-                <div class="crop-card" onclick="showCropInfo('Tomate')">
-                    <span class="emoji">🍅</span>
-                    <span>Tomate</span>
+                <div class="crop-card" onclick="showCropInfo('Banano')">
+                    <span class="emoji">🍌</span>
+                    <span>Banano</span>
                 </div>
                 <div class="crop-card" onclick="showCropInfo('Café')">
                     <span class="emoji">☕</span>
@@ -1142,6 +1126,46 @@
                 <div class="crop-card" onclick="showCropInfo('Cebolla')">
                     <span class="emoji">🧅</span>
                     <span>Cebolla</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Durazno')">
+                    <span class="emoji">🍑</span>
+                    <span>Durazno</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Frutilla')">
+                    <span class="emoji">🍓</span>
+                    <span>Frutilla</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Lechuga')">
+                    <span class="emoji">🥬</span>
+                    <span>Lechuga</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Maíz choclo')">
+                    <span class="emoji">🌽</span>
+                    <span>Maíz choclo</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Maíz de grano')">
+                    <span class="emoji">🌽</span>
+                    <span>Maíz de grano</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Naranja')">
+                    <span class="emoji">🍊</span>
+                    <span>Naranja</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Papa')">
+                    <span class="emoji">🥔</span>
+                    <span>Papa</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Quinua')">
+                    <span class="emoji">🌾</span>
+                    <span>Quinua</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Tomate')">
+                    <span class="emoji">🍅</span>
+                    <span>Tomate</span>
+                </div>
+                <div class="crop-card" onclick="showCropInfo('Uva')">
+                    <span class="emoji">🍇</span>
+                    <span>Uva</span>
                 </div>
             </div>
 
@@ -1608,14 +1632,20 @@
         // Crop Info Logic
         function showCropInfo(cropName) {
             const info = {
-                'Papa': 'Fundamental para la seguridad alimentaria en Bolivia, con más de 1,500 variedades locales cultivadas principalmente en la zona andina. Es el cultivo con mayor superficie y consumo en el país.',
-                'Maíz': 'Cultivo vital presente en los valles, llanos y el Chaco. Es esencial tanto para el consumo humano tradicional como para la cadena de producción de proteína animal.',
-                'Quinua': 'El "Grano de Oro" de los Andes. Bolivia es líder mundial en exportación de quinua real, destacando su producción orgánica y sostenible en el Altiplano sur.',
-                'Uva': 'Eje central de la economía en los valles de Tarija y Cinti, sustentando la industria de vinos de altura y el Singani, producto con denominación de origen boliviana.',
-                'Durazno': 'De gran importancia económica para los pequeños productores de los valles interandinos, con Cochabamba y Chuquisaca como principales centros de abastecimiento nacional.',
-                'Tomate': 'Especie hortícola clave producida bajo diversos sistemas (campo abierto y carpas solares) para satisfacer la demanda constante del mercado nacional.',
+                'Ajo': 'Cultivo hortícola de alto valor comercial, cultivado principalmente en zonas de valle, esencial como condimento en la gastronomía y con creciente demanda.',
+                'Banano': 'Frutal de gran importancia en el trópico de Cochabamba y los Yungas paceños, clave para la exportación y el consumo interno durante todo el año.',
                 'Café': 'Producto de exportación de altísima calidad. Los cafés especiales de las Yungas paceñas son reconocidos internacionalmente en competencias de excelencia.',
-                'Cebolla': 'Hortaliza básica en la dieta nacional, con una producción creciente en valles y cabeceras de valle que permite incluso la exportación regional.'
+                'Cebolla': 'Hortaliza básica en la dieta nacional, con una producción creciente en valles y cabeceras de valle que permite incluso la exportación regional.',
+                'Durazno': 'De gran importancia económica para los pequeños productores de los valles interandinos, con Cochabamba y Chuquisaca como principales centros de abastecimiento nacional.',
+                'Frutilla': 'Cultivo de alto valor agregado, cultivado en zonas de valle y cabeceras, que genera importantes ingresos para la agricultura familiar campesina.',
+                'Lechuga': 'Hortaliza de hoja indispensable en la dieta boliviana, cultivada extensamente en cinturones periurbanos y valles para abastecer los mercados frescos diariamente.',
+                'Maíz choclo': 'Variedad de maíz consumida tierna, fundamental en la gastronomía tradicional boliviana y cultivada ampliamente en los valles y zonas templadas.',
+                'Maíz de grano': 'Cultivo vital presente en los llanos y el Chaco, esencial para el consumo humano, el procesamiento industrial y la cadena de producción de proteína animal.',
+                'Naranja': 'Cítrico fundamental cultivado en las zonas subtropicales y tropicales, básico para el consumo nacional de frutas frescas y la industria de jugos.',
+                'Papa': 'Fundamental para la seguridad alimentaria en Bolivia, con más de 1,500 variedades locales cultivadas principalmente en la zona andina. Es el cultivo con mayor superficie y consumo en el país.',
+                'Quinua': 'El "Grano de Oro" de los Andes. Bolivia es líder mundial en exportación de quinua real, destacando su producción orgánica y sostenible en el Altiplano sur.',
+                'Tomate': 'Especie hortícola clave producida bajo diversos sistemas (campo abierto y carpas solares) para satisfacer la demanda constante del mercado nacional.',
+                'Uva': 'Eje central de la economía en los valles de Tarija y Cinti, sustentando la industria de vinos de altura y el Singani, producto con denominación de origen boliviana.'
             };
             
             const infoBox = document.getElementById('crop-info-box');
