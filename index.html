@@ -1343,87 +1343,100 @@
         <h2 class="section-title">Scripts y Herramientas</h2>
         <p style="font-size: 1.1rem; max-width: 800px;">Repositorio de códigos y herramientas desarrolladas para el procesamiento de datos climáticos y modelación de riesgos epidemiológicos.</p>
         
-        <div style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 2rem; margin-top: 2rem;">
-            <h3 style="color: var(--cat-green); margin-top: 0; font-size: 1.4rem; display: flex; align-items: center; gap: 10px;">
-                <span>💻</span> Generador de Series Históricas Climáticas para Bolivia (1981-2025)
-            </h3>
-            <p>Este proyecto contiene una colección de scripts en R diseñados para procesar, estandarizar y generar una serie histórica de mapas climáticos diarios para Bolivia, abarcando el periodo comprendido entre 1981 y 2025.</p>
-            <p>El objetivo principal de este flujo de trabajo es armonizar variables climáticas provenientes de diferentes fuentes (CHIRPS y AgERA5) para que compartan la misma extensión espacial, sistema de coordenadas y una resolución espacial unificada de 5 km.</p>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
-                <!-- Datos Utilizados -->
-                <div style="background: white; padding: 1.5rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <h4 style="color: var(--dark-bg); margin-top: 0;">📊 Datos Utilizados</h4>
-                    <ul class="styled-list">
-                        <li><strong>CHIRPS v3:</strong> Precipitación diaria. Base grid a 5 km de resolución. Recorte espacial y limpieza de datos.</li>
-                        <li><strong>AgERA5 versión 2:</strong> Temperatura Máxima, Temperatura Mínima, Humedad Relativa, PET y VPD. Conversión de unidades y reescalado a 5 km.</li>
-                    </ul>
-                </div>
-                
-                <!-- Metodología -->
-                <div style="background: white; padding: 1.5rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <h4 style="color: var(--dark-bg); margin-top: 0;">⚙️ Metodología (Flujo iterativo)</h4>
-                    <ul class="styled-list">
-                        <li><strong>Carga de límites:</strong> Shapefile de Bolivia (sf).</li>
-                        <li><strong>Raster base:</strong> Mapa diario de CHIRPS.</li>
-                        <li><strong>Recorte y Máscara:</strong> Crop & Mask a los límites de Bolivia.</li>
-                        <li><strong>Transformación:</strong> Limpieza y conversiones.</li>
-                        <li><strong>Remuestreo:</strong> Resample a 5 km (método bilinear).</li>
-                    </ul>
-                </div>
-                
-                <!-- Requisitos -->
-                <div style="background: white; padding: 1.5rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <h4 style="color: var(--dark-bg); margin-top: 0;">🛠️ Requisitos del Sistema</h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">Instalación en R:</p>
-                    <code style="background: #1e293b; color: #a5b4fc; padding: 8px 12px; border-radius: 4px; display: block; font-family: monospace;">install.packages(c("terra", "sf", "sp"))</code>
-                    <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-light);">* <strong>terra:</strong> Manejo raster, <strong>sf:</strong> Datos vectoriales.</p>
-                </div>
-            </div>
+        <!-- Selector de Proyectos -->
+        <div class="filter-group" style="margin-top: 1.5rem; max-width: 500px;">
+            <label for="script-project-select" style="font-weight: 700; color: var(--dark-bg); display: block; margin-bottom: 0.5rem;">Seleccionar Proyecto:</label>
+            <select id="script-project-select" onchange="showScriptProject(this.value)" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; font-size: 1rem; cursor: pointer; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <option value="historical-climate">Generador de Series Históricas Climáticas (1981-2025)</option>
+                <!-- Nuevos proyectos se agregarán aquí -->
+            </select>
+        </div>
 
-            <h4 style="color: var(--dark-bg); margin-top: 2.5rem; margin-bottom: 1rem;">📂 Estructura del Repositorio y Descargas</h4>
-            <div style="background: white; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;">
-                    <thead>
-                        <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
-                            <th style="padding: 1rem; font-weight: 700; color: var(--dark-bg);">Script</th>
-                            <th style="padding: 1rem; font-weight: 700; color: var(--dark-bg);">Descripción</th>
-                            <th style="padding: 1rem; font-weight: 700; color: var(--dark-bg); text-align: center;">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 1rem; font-family: monospace; color: var(--cat-green);">01_Precipitacion_CHIRPS.R</td>
-                            <td style="padding: 1rem; font-size: 0.9rem;">Procesa los datos diarios de precipitación (Referencia a 5km).</td>
-                            <td style="padding: 1rem; text-align: center;"><a href="Scripts/Bases%20de%20datos%20climáticas%20historicas/01_Precipitacion_CHIRPS.R" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 1rem; font-family: monospace; color: var(--cat-green);">02_Tmax_AgERA5.R</td>
-                            <td style="padding: 1rem; font-size: 0.9rem;">Procesa, convierte y reescala la temperatura máxima.</td>
-                            <td style="padding: 1rem; text-align: center;"><a href="Scripts/Bases%20de%20datos%20climáticas%20historicas/02_Tmax_AgERA5.R" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 1rem; font-family: monospace; color: var(--cat-green);">03_Tmin_AgERA5.R</td>
-                            <td style="padding: 1rem; font-size: 0.9rem;">Procesa, convierte y reescala la temperatura mínima.</td>
-                            <td style="padding: 1rem; text-align: center;"><a href="Scripts/Bases%20de%20datos%20climáticas%20historicas/03_Tmin_AgERA5.R" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 1rem; font-family: monospace; color: var(--cat-green);">04_HumedadRelativa_AgERA5.R</td>
-                            <td style="padding: 1rem; font-size: 0.9rem;">Procesa y reescala la humedad relativa.</td>
-                            <td style="padding: 1rem; text-align: center;"><a href="Scripts/Bases%20de%20datos%20climáticas%20historicas/04_HumedadRelativa_AgERA5.R" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 1rem; font-family: monospace; color: var(--cat-green);">05_PET_VPD_AgERA5.R</td>
-                            <td style="padding: 1rem; font-size: 0.9rem;">Procesa y reescala la evapotranspiración potencial y déficit de presión de vapor (código unificado).</td>
-                            <td style="padding: 1rem; text-align: center;"><a href="Scripts/Bases%20de%20datos%20climáticas%20historicas/05_PET_VPD_AgERA5.R" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div style="margin-top: 1.5rem; font-size: 0.85rem; color: #64748b; font-style: italic; display: flex; gap: 8px;">
-                <span>⚠️</span> 
-                <span><strong>Nota Importante:</strong> Los scripts están configurados para servidores de Alliance. Para uso local, modifique las rutas <code>st_read()</code>, <code>terra::rast()</code> y <code>setwd()</code>. Autor base: Camilo Barrios-Perez (Ph.D). Adaptación: SAT Bolivia.</span>
+        <!-- Contenedor de Proyectos -->
+        <div id="script-projects-container">
+            <!-- Proyecto 1: Series Históricas -->
+            <div id="project-historical-climate" class="script-project-view active" style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 2rem; margin-top: 1.5rem; display: block;">
+                <h3 style="color: var(--cat-green); margin-top: 0; font-size: 1.4rem; display: flex; align-items: center; gap: 10px;">
+                    <span>💻</span> Generador de Series Históricas Climáticas para Bolivia (1981-2025)
+                </h3>
+                <p>Este proyecto contiene una colección de scripts en R diseñados para procesar, estandarizar y generar una serie histórica de mapas climáticos diarios para Bolivia, abarcando el periodo comprendido entre 1981 y 2025.</p>
+                <p>El objetivo principal de este flujo de trabajo es armonizar variables climáticas provenientes de diferentes fuentes (CHIRPS y AgERA5) para que compartan la misma extensión espacial, sistema de coordenadas y una resolución espacial unificada de 5 km.</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                    <!-- Datos Utilizados -->
+                    <div style="background: white; padding: 1.5rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <h4 style="color: var(--dark-bg); margin-top: 0;">📊 Datos Utilizados</h4>
+                        <ul class="styled-list">
+                            <li><strong>CHIRPS v3:</strong> Precipitación diaria. Base grid a 5 km de resolución. Recorte espacial y limpieza de datos.</li>
+                            <li><strong>AgERA5 versión 2:</strong> Temperatura Máxima, Temperatura Mínima, Humedad Relativa, PET y VPD. Conversión de unidades y reescalado a 5 km.</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Metodología -->
+                    <div style="background: white; padding: 1.5rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <h4 style="color: var(--dark-bg); margin-top: 0;">⚙️ Metodología (Flujo iterativo)</h4>
+                        <ul class="styled-list">
+                            <li><strong>Carga de límites:</strong> Shapefile de Bolivia (sf).</li>
+                            <li><strong>Raster base:</strong> Mapa diario de CHIRPS.</li>
+                            <li><strong>Recorte y Máscara:</strong> Crop & Mask a los límites de Bolivia.</li>
+                            <li><strong>Transformación:</strong> Limpieza y conversiones.</li>
+                            <li><strong>Remuestreo:</strong> Resample a 5 km (método bilinear).</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Requisitos -->
+                    <div style="background: white; padding: 1.5rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <h4 style="color: var(--dark-bg); margin-top: 0;">🛠️ Requisitos del Sistema</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">Instalación en R:</p>
+                        <code style="background: #1e293b; color: #a5b4fc; padding: 8px 12px; border-radius: 4px; display: block; font-family: monospace;">install.packages(c("terra", "sf", "sp"))</code>
+                        <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-light);">* <strong>terra:</strong> Manejo raster, <strong>sf:</strong> Datos vectoriales.</p>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--dark-bg); margin-top: 2.5rem; margin-bottom: 1rem;">📂 Estructura del Repositorio y Descargas</h4>
+                <div style="background: white; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+                                <th style="padding: 1rem; font-weight: 700; color: var(--dark-bg);">Script</th>
+                                <th style="padding: 1rem; font-weight: 700; color: var(--dark-bg);">Descripción</th>
+                                <th style="padding: 1rem; font-weight: 700; color: var(--dark-bg); text-align: center;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green);">01_Precipitacion_CHIRPS.R</td>
+                                <td style="padding: 1rem; font-size: 0.9rem;">Procesa los datos diarios de precipitación (Referencia a 5km).</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Bases%20de%20datos%20climáticas%20historicas/01_Precipitacion_CHIRPS.R" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green);">02_Tmax_AgERA5.R</td>
+                                <td style="padding: 1rem; font-size: 0.9rem;">Procesa, convierte y reescala la temperatura máxima.</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Bases%20de%20datos%20climáticas%20historicas/02_Tmax_AgERA5.R" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green);">03_Tmin_AgERA5.R</td>
+                                <td style="padding: 1rem; font-size: 0.9rem;">Procesa, convierte y reescala la temperatura mínima.</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Bases%20de%20datos%20climáticas%20historicas/03_Tmin_AgERA5.R" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green);">04_HumedadRelativa_AgERA5.R</td>
+                                <td style="padding: 1rem; font-size: 0.9rem;">Procesa y reescala la humedad relativa.</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Bases%20de%20datos%20climáticas%20historicas/04_HumedadRelativa_AgERA5.R" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green);">05_PET_VPD_AgERA5.R</td>
+                                <td style="padding: 1rem; font-size: 0.9rem;">Procesa y reescala la evapotranspiración potencial y déficit de presión de vapor (código unificado).</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Bases%20de%20datos%20climáticas%20historicas/05_PET_VPD_AgERA5.R" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div style="margin-top: 1.5rem; font-size: 0.85rem; color: #64748b; font-style: italic; display: flex; gap: 8px;">
+                    <span>⚠️</span> 
+                    <span><strong>Nota Importante:</strong> Los scripts están configurados para servidores de Alliance. Para uso local, modifique las rutas <code>st_read()</code>, <code>terra::rast()</code> y <code>setwd()</code>. Autor base: Camilo Barrios-Perez (Ph.D). Adaptación: SAT Bolivia.</span>
+                </div>
             </div>
         </div>
     </section>
@@ -1824,6 +1837,30 @@
                 </div>
             `;
             infoBox.style.display = 'block';
+        }
+
+        // Script Projects Logic
+        function showScriptProject(projectId) {
+            const projects = document.querySelectorAll('.script-project-view');
+            
+            // Hide all
+            projects.forEach(p => {
+                p.style.display = 'none';
+                p.classList.remove('active');
+            });
+            
+            // Show selected
+            const selectedProject = document.getElementById('project-' + projectId);
+            if (selectedProject) {
+                selectedProject.style.display = 'block';
+                // Small animation effect
+                selectedProject.style.opacity = '0';
+                setTimeout(() => {
+                    selectedProject.style.transition = 'opacity 0.3s ease-in';
+                    selectedProject.style.opacity = '1';
+                    selectedProject.classList.add('active');
+                }, 10);
+            }
         }
 
         // Methodology Stepper Logic
