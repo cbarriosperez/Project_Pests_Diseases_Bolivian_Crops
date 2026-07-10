@@ -1631,21 +1631,77 @@
 
         // Crop Info Logic
         function showCropInfo(cropName) {
-            const info = {
-                'Ajo': 'Cultivo hortícola de alto valor comercial, cultivado principalmente en zonas de valle, esencial como condimento en la gastronomía y con creciente demanda.',
-                'Banano': 'Frutal de gran importancia en el trópico de Cochabamba y los Yungas paceños, clave para la exportación y el consumo interno durante todo el año.',
-                'Café': 'Producto de exportación de altísima calidad. Los cafés especiales de las Yungas paceñas son reconocidos internacionalmente en competencias de excelencia.',
-                'Cebolla': 'Hortaliza básica en la dieta nacional, con una producción creciente en valles y cabeceras de valle que permite incluso la exportación regional.',
-                'Durazno': 'De gran importancia económica para los pequeños productores de los valles interandinos, con Cochabamba y Chuquisaca como principales centros de abastecimiento nacional.',
-                'Frutilla': 'Cultivo de alto valor agregado, cultivado en zonas de valle y cabeceras, que genera importantes ingresos para la agricultura familiar campesina.',
-                'Lechuga': 'Hortaliza de hoja indispensable en la dieta boliviana, cultivada extensamente en cinturones periurbanos y valles para abastecer los mercados frescos diariamente.',
-                'Maíz choclo': 'Variedad de maíz consumida tierna, fundamental en la gastronomía tradicional boliviana y cultivada ampliamente en los valles y zonas templadas.',
-                'Maíz de grano': 'Cultivo vital presente en los llanos y el Chaco, esencial para el consumo humano, el procesamiento industrial y la cadena de producción de proteína animal.',
-                'Naranja': 'Cítrico fundamental cultivado en las zonas subtropicales y tropicales, básico para el consumo nacional de frutas frescas y la industria de jugos.',
-                'Papa': 'Fundamental para la seguridad alimentaria en Bolivia, con más de 1,500 variedades locales cultivadas principalmente en la zona andina. Es el cultivo con mayor superficie y consumo en el país.',
-                'Quinua': 'El "Grano de Oro" de los Andes. Bolivia es líder mundial en exportación de quinua real, destacando su producción orgánica y sostenible en el Altiplano sur.',
-                'Tomate': 'Especie hortícola clave producida bajo diversos sistemas (campo abierto y carpas solares) para satisfacer la demanda constante del mercado nacional.',
-                'Uva': 'Eje central de la economía en los valles de Tarija y Cinti, sustentando la industria de vinos de altura y el Singani, producto con denominación de origen boliviana.'
+            const cropData = {
+                'Ajo': {
+                    desc: 'Cultivo hortícola de alto valor comercial, cultivado principalmente en zonas de valle, esencial como condimento en la gastronomía y con creciente demanda.',
+                    pest: 'Fusariosis (pudrición basal)',
+                    pestDesc: 'Hongo del suelo que marchita la planta y pudre la base del bulbo, causando pérdidas severas en la producción de valles como Tarija y Chuquisaca.'
+                },
+                'Banano': {
+                    desc: 'Frutal de gran importancia en el trópico de Cochabamba y los Yungas paceños, clave para la exportación y el consumo interno durante todo el año.',
+                    pest: 'Sigatoka negra',
+                    pestDesc: 'Enfermedad foliar altamente destructiva en zonas tropicales que reduce drásticamente el rendimiento y la calidad del racimo.'
+                },
+                'Café': {
+                    desc: 'Producto de exportación de altísima calidad. Los cafés especiales de las Yungas paceñas son reconocidos internacionalmente en competencias de excelencia.',
+                    pest: 'Broca del Café',
+                    pestDesc: 'Insecto perforador del grano que representa la mayor amenaza para la caficultura boliviana en zonas cálidas y húmedas, afectando la calidad de exportación.'
+                },
+                'Cebolla': {
+                    desc: 'Hortaliza básica en la dieta nacional, con una producción creciente en valles y cabeceras de valle que permite incluso la exportación regional.',
+                    pest: 'Mildiu (Polvillo negro)',
+                    pestDesc: 'Enfermedad fúngica agresiva favorecida por alta humedad, que destruye el follaje y reduce la formación del bulbo en regiones productoras.'
+                },
+                'Durazno': {
+                    desc: 'De gran importancia económica para los pequeños productores de los valles interandinos, con Cochabamba y Chuquisaca como principales centros de abastecimiento nacional.',
+                    pest: 'Arañuela roja / Oídio',
+                    pestDesc: 'Complejo de plaga (ácaro que seca las hojas) y enfermedad (hongo de ceniza blanca) exacerbados por el estrés hídrico y variaciones térmicas en los valles.'
+                },
+                'Frutilla': {
+                    desc: 'Cultivo de alto valor agregado, cultivado en zonas de valle y cabeceras, que genera importantes ingresos para la agricultura familiar campesina.',
+                    pest: 'Botrytis (moho gris)',
+                    pestDesc: 'Hongo que pudre rápidamente los frutos, especialmente durante períodos de alta humedad o lluvias, siendo crítico para los productores de los valles.'
+                },
+                'Lechuga': {
+                    desc: 'Hortaliza de hoja indispensable en la dieta boliviana, cultivada extensamente en cinturones periurbanos y valles para abastecer los mercados frescos diariamente.',
+                    pest: 'Sclerotinia sclerotiorum',
+                    pestDesc: 'Patógeno del suelo causante de la pudrición blanca, devastador en cultivos intensivos y de alta densidad por su rápida propagación.'
+                },
+                'Maíz choclo': {
+                    desc: 'Variedad de maíz consumida tierna, fundamental en la gastronomía tradicional boliviana y cultivada ampliamente en los valles y zonas templadas.',
+                    pest: 'Gusano cogollero',
+                    pestDesc: 'Plaga voraz que destruye el cogollo y las hojas tiernas de la planta, siendo el principal problema entomológico del maíz en diversas ecorregiones.'
+                },
+                'Maíz de grano': {
+                    desc: 'Cultivo vital presente en los llanos y el Chaco, esencial para el consumo humano, el procesamiento industrial y la cadena de producción de proteína animal.',
+                    pest: 'Roya',
+                    pestDesc: 'Enfermedad fúngica foliar impulsada por vientos y humedad, que merma la capacidad fotosintética y disminuye significativamente los rendimientos en llanos y Chaco.'
+                },
+                'Naranja': {
+                    desc: 'Cítrico fundamental cultivado en las zonas subtropicales y tropicales, básico para el consumo nacional de frutas frescas y la industria de jugos.',
+                    pest: 'Mosca de la fruta',
+                    pestDesc: 'Plaga cuarentenaria que oviposita en los frutos, causando su pudrición prematura y restringiendo severamente el acceso a mercados internacionales.'
+                },
+                'Papa': {
+                    desc: 'Fundamental para la seguridad alimentaria en Bolivia, con más de 1,500 variedades locales cultivadas principalmente en la zona andina. Es el cultivo con mayor superficie y consumo en el país.',
+                    pest: 'Gorgojo de los Andes',
+                    pestDesc: 'Insecto nativo andino cuyas larvas barrenan el tubérculo, reduciendo su valor comercial y causando pérdidas masivas en el Altiplano y Valles Altos.'
+                },
+                'Quinua': {
+                    desc: 'El "Grano de Oro" de los Andes. Bolivia es líder mundial en exportación de quinua real, destacando su producción orgánica y sostenible en el Altiplano sur.',
+                    pest: 'Ticona',
+                    pestDesc: 'Polilla endémica del Altiplano cuyas larvas se alimentan de las hojas y la panoja de la quinua, siendo una plaga clave exacerbada por cambios climáticos.'
+                },
+                'Tomate': {
+                    desc: 'Especie hortícola clave producida bajo diversos sistemas (campo abierto y carpas solares) para satisfacer la demanda constante del mercado nacional.',
+                    pest: 'Polilla (Tuta absoluta)',
+                    pestDesc: 'Minador de hojas y frutos de rápida reproducción, capaz de devastar cultivos enteros a campo abierto y en carpas solares si no se monitorea.'
+                },
+                'Uva': {
+                    desc: 'Eje central de la economía en los valles de Tarija y Cinti, sustentando la industria de vinos de altura y el Singani, producto con denominación de origen boliviana.',
+                    pest: 'Mildiu de la uva',
+                    pestDesc: 'Enfermedad letal para el follaje y los racimos en zonas vitivinícolas como Tarija, altamente dependiente de las precipitaciones y la humedad relativa.'
+                }
             };
             
             const infoBox = document.getElementById('crop-info-box');
@@ -1661,7 +1717,22 @@
                 }
             });
 
-            infoContent.innerHTML = `<strong>${cropName}</strong> ${info[cropName]}`;
+            const data = cropData[cropName];
+            
+            infoContent.innerHTML = `
+                <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4 style="color: var(--cat-green); margin-top: 0; font-size: 1.1rem; margin-bottom: 0.5rem;">${cropName} - Importancia</h4>
+                        <p style="margin: 0; font-size: 0.95rem; line-height: 1.5;">${data.desc}</p>
+                    </div>
+                    <div style="flex: 1; min-width: 250px; background: #fff1f2; border-left: 4px solid #e11d48; padding: 1rem; border-radius: 4px;">
+                        <h4 style="color: #e11d48; margin-top: 0; font-size: 1.05rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.2rem;">⚠️</span> Patógeno Priorizado (SAT)
+                        </h4>
+                        <p style="margin: 0; font-size: 0.95rem; line-height: 1.5;"><strong>${data.pest}:</strong> ${data.pestDesc}</p>
+                    </div>
+                </div>
+            `;
             infoBox.style.display = 'block';
         }
 
