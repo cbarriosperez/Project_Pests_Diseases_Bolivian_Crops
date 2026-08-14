@@ -22,6 +22,7 @@ El proyecto está organizado por cultivo, conteniendo cada carpeta el script de 
 - 🍊 **Naranja:** [`Script_Indice_Riesgo_Naranja_Espacial.R`](./Naranja/Script_Indice_Riesgo_Naranja_Espacial.R)
 - 🥔 **Papa:** [`Script_Indice_Riesgo_Papa_Espacial.R`](./Papa/Script_Indice_Riesgo_Papa_Espacial.R)
 - 🌾 **Quinua:** [`Script_Indice_Riesgo_Quinua_Espacial.R`](./Quinua/Script_Indice_Riesgo_Quinua_Espacial.R)
+- 🍅 **Tomate:** [`Script_Indice_Riesgo_Tomate_Espacial.R`](./Tomate/Script_Indice_Riesgo_Tomate_Espacial.R)
 - 🍇 **Uva:** [`Script_Indice_Riesgo_Uva_Espacial.R`](./Uva/Script_Indice_Riesgo_Uva_Espacial.R)
 
 ## 🚀 Uso
