@@ -1365,6 +1365,7 @@
             <select id="script-project-select" onchange="showScriptProject(this.value)" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; font-size: 1rem; cursor: pointer; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <option value="historical-climate">Generador de Series Históricas Climáticas (1981-2025)</option>
                 <option value="climate-visualization">Visualización de Variables Climáticas Históricas (Python Notebook)</option>
+                <option value="agroclimatic-models">Modelos Agroclimáticos en R</option>
             </select>
         </div>
 
@@ -1500,6 +1501,55 @@
                     <p style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.1rem;">Accede y ejecuta el notebook directamente desde la nube:</p>
                     <a href="https://colab.research.google.com/drive/1EqN6D52Pk29cWuuGyU7cIpE8aNnrYDyq#scrollTo=rnQ1RhmP0ZNq" target="_blank" style="display: inline-block; background: #f9ab00; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 1.1rem; box-shadow: 0 2px 5px rgba(249, 171, 0, 0.3); transition: all 0.3s ease;">
                         <span style="margin-right: 8px;">🔗</span> Abrir Notebook en Google Colab
+                    </a>
+                </div>
+            </div>
+
+            <!-- Proyecto 3: Modelos Agroclimáticos -->
+            <div id="project-agroclimatic-models" class="script-project-view" style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 2rem; margin-top: 1.5rem; display: none;">
+                <h3 style="color: var(--cat-green); margin-top: 0; font-size: 1.4rem; display: flex; align-items: center; gap: 10px;">
+                    <span>🌾</span> Modelos Agroclimáticos en R
+                </h3>
+                <p>Este subproyecto contiene todos los scripts en lenguaje <strong>R</strong> utilizados para el cálculo y desarrollo de los <strong>Modelos Agroclimáticos</strong> (Índices de Riesgo Espacial) de diferentes cultivos de importancia para Bolivia.</p>
+                <p>Cada script está diseñado para procesar datos climáticos y calcular índices de riesgo fitosanitario (plagas y enfermedades) a nivel espacial para un cultivo específico, generando mapas y resultados útiles para la toma de decisiones agrícolas.</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                    <!-- Datos Utilizados -->
+                    <div style="background: white; padding: 1.5rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <h4 style="color: var(--dark-bg); margin-top: 0;">📂 Cultivos y Scripts</h4>
+                        <ul class="styled-list" style="columns: 2; -webkit-columns: 2; -moz-columns: 2;">
+                            <li>🧄 Ajo</li>
+                            <li>🍌 Banano</li>
+                            <li>☕ Café</li>
+                            <li>🧅 Cebolla</li>
+                            <li>🍑 Durazno</li>
+                            <li>🍓 Frutilla</li>
+                            <li>🥬 Lechuga</li>
+                            <li>🌽 Maíz Choclo</li>
+                            <li>🌽 Maíz de Grano</li>
+                            <li>🍊 Naranja</li>
+                            <li>🥔 Papa</li>
+                            <li>🌾 Quinua</li>
+                            <li>🍇 Uva</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Uso -->
+                    <div style="background: white; padding: 1.5rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <h4 style="color: var(--dark-bg); margin-top: 0;">🚀 Uso del Proyecto</h4>
+                        <ol class="styled-list">
+                            <li>Abrir el archivo <code>Modelos_Agroclimaticos_R.Rproj</code> en RStudio.</li>
+                            <li>Abrir el script del cultivo deseado dentro de su respectiva carpeta.</li>
+                            <li>Asegurarse de tener los datos de entrada correspondientes antes de ejecutar.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--dark-bg); margin-top: 2.5rem; margin-bottom: 1rem;">📂 Acceso al Repositorio</h4>
+                <div style="background: white; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; padding: 2rem; text-align: center;">
+                    <p style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.1rem;">Explora los scripts y la documentación directamente en el repositorio:</p>
+                    <a href="Scripts/Modelos_Agroclimaticos_R" target="_blank" style="display: inline-block; background: var(--cat-green); color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 1.1rem; box-shadow: 0 2px 5px rgba(0,0,0, 0.2); transition: all 0.3s ease;">
+                        <span style="margin-right: 8px;">📂</span> Ver Carpeta de Modelos Agroclimáticos
                     </a>
                 </div>
             </div>
