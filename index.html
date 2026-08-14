@@ -1568,40 +1568,30 @@
                 
                 <div class="filter-group">
                     <label>Cultivo de Interés</label>
-                    <select>
-                        <option>Papa (Solanum tuberosum)</option>
-                        <option>Maíz (Zea mays)</option>
-                        <option>Quinua (Chenopodium quinoa)</option>
-                        <option>Café (Coffea arabica)</option>
+                    <select id="explorer-crop-select" onchange="updateExplorerPests()">
                     </select>
                 </div>
                 
                 <div class="filter-group">
                     <label>Plaga / Enfermedad</label>
-                    <select>
-                        <option>Tizón Tardío (Phytophthora infestans)</option>
-                        <option>Roya del Cafeto</option>
-                        <option>Gusano Cogollero</option>
+                    <select id="explorer-pest-select" onchange="updateExplorerDates()">
                     </select>
                 </div>
 
                 <div class="filter-group">
                     <label>Escenario Temporal</label>
-                    <select>
-                        <option>Pronóstico Estacional (Oct 2026)</option>
-                        <option>Línea Base Histórica</option>
-                        <option>Fenómeno El Niño</option>
+                    <select id="explorer-date-select" onchange="updateExplorerImage()">
                     </select>
                 </div>
                 
-                <button class="explorer-btn">Actualizar Mapa</button>
+                <button class="explorer-btn" onclick="updateExplorerImage()">Actualizar Mapa</button>
             </div>
             <div class="explorer-main">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; color: var(--dark-bg);">Índice de Vulnerabilidad: Tizón Tardío</h3>
+                    <h3 id="explorer-map-title" style="margin: 0; color: var(--dark-bg);">Índice de Vulnerabilidad</h3>
                     <span style="font-size: 0.85rem; font-weight: 700; color: var(--cat-orange); background: #fff8f1; padding: 4px 10px; border-radius: 4px; border: 1px solid var(--cat-orange);">Riesgo Elevado</span>
                 </div>
-                <img class="explorer-img" src="figures/data_explorer_map.png" alt="Mapa de calor de riesgo en Bolivia">
+                <img id="explorer-map-img" class="explorer-img" src="figures/data_explorer_map.png" alt="Mapa de calor de riesgo en Bolivia">
                 <p style="font-size: 0.85rem; color: #888; text-align: right; margin-top: 10px; font-style: italic;">* Los datos espaciales son proyecciones del modelo de inteligencia agroclimática.</p>
             </div>
         </div>
@@ -1992,6 +1982,86 @@
             steps[stepNumber-1].classList.add('active');
             details[stepNumber-1].classList.add('active');
         }
+
+        // --- Data Explorer Dynamic Logic ---
+        function initExplorer() {
+            const cropSelect = document.getElementById('explorer-crop-select');
+            cropSelect.innerHTML = '';
+            // explorerData is loaded from explorer_data.js
+            if (typeof explorerData !== 'undefined') {
+                for (const crop in explorerData) {
+                    const opt = document.createElement('option');
+                    opt.value = crop;
+                    opt.textContent = crop;
+                    cropSelect.appendChild(opt);
+                }
+                updateExplorerPests();
+            }
+        }
+
+        function updateExplorerPests() {
+            const cropSelect = document.getElementById('explorer-crop-select');
+            const pestSelect = document.getElementById('explorer-pest-select');
+            const selectedCrop = cropSelect.value;
+            
+            pestSelect.innerHTML = '';
+            if (selectedCrop && explorerData[selectedCrop]) {
+                for (const pest in explorerData[selectedCrop]) {
+                    const opt = document.createElement('option');
+                    opt.value = pest;
+                    opt.textContent = pest;
+                    pestSelect.appendChild(opt);
+                }
+            }
+            updateExplorerDates();
+        }
+
+        function updateExplorerDates() {
+            const cropSelect = document.getElementById('explorer-crop-select');
+            const pestSelect = document.getElementById('explorer-pest-select');
+            const dateSelect = document.getElementById('explorer-date-select');
+            
+            const selectedCrop = cropSelect.value;
+            const selectedPest = pestSelect.value;
+            
+            dateSelect.innerHTML = '';
+            if (selectedCrop && selectedPest && explorerData[selectedCrop][selectedPest]) {
+                const dates = Object.keys(explorerData[selectedCrop][selectedPest]).sort();
+                for (const date of dates) {
+                    const opt = document.createElement('option');
+                    opt.value = date;
+                    opt.textContent = date;
+                    dateSelect.appendChild(opt);
+                }
+            }
+            updateExplorerImage();
+        }
+
+        function updateExplorerImage() {
+            const cropSelect = document.getElementById('explorer-crop-select');
+            const pestSelect = document.getElementById('explorer-pest-select');
+            const dateSelect = document.getElementById('explorer-date-select');
+            const mapImg = document.getElementById('explorer-map-img');
+            const title = document.getElementById('explorer-map-title');
+            
+            const selectedCrop = cropSelect.value;
+            const selectedPest = pestSelect.value;
+            const selectedDate = dateSelect.value;
+            
+            if (selectedCrop && selectedPest && selectedDate) {
+                const imgPath = explorerData[selectedCrop][selectedPest][selectedDate];
+                mapImg.src = imgPath;
+                if (selectedPest === "Riesgo General") {
+                    title.textContent = "Índice de Vulnerabilidad: " + selectedCrop;
+                } else {
+                    title.textContent = "Índice de Vulnerabilidad: " + selectedCrop + " - " + selectedPest;
+                }
+            }
+        }
+
+        // Initialize explorer on page load
+        document.addEventListener('DOMContentLoaded', initExplorer);
     </script>
+    <script src="explorer_data.js"></script>
 </body>
 </html>
