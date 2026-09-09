@@ -1574,7 +1574,13 @@
                 
                 <div class="filter-group">
                     <label>Plaga / Enfermedad</label>
-                    <select id="explorer-pest-select" onchange="updateExplorerDates()">
+                    <select id="explorer-pest-select" onchange="updateExplorerYears()">
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Año</label>
+                    <select id="explorer-year-select" onchange="updateExplorerDates()">
                     </select>
                 </div>
 
@@ -2013,20 +2019,43 @@
                     pestSelect.appendChild(opt);
                 }
             }
+            updateExplorerYears();
+        }
+
+        function updateExplorerYears() {
+            const cropSelect = document.getElementById('explorer-crop-select');
+            const pestSelect = document.getElementById('explorer-pest-select');
+            const yearSelect = document.getElementById('explorer-year-select');
+            
+            const selectedCrop = cropSelect.value;
+            const selectedPest = pestSelect.value;
+            
+            yearSelect.innerHTML = '';
+            if (selectedCrop && selectedPest && explorerData[selectedCrop][selectedPest]) {
+                const years = Object.keys(explorerData[selectedCrop][selectedPest]).sort();
+                for (const year of years) {
+                    const opt = document.createElement('option');
+                    opt.value = year;
+                    opt.textContent = year;
+                    yearSelect.appendChild(opt);
+                }
+            }
             updateExplorerDates();
         }
 
         function updateExplorerDates() {
             const cropSelect = document.getElementById('explorer-crop-select');
             const pestSelect = document.getElementById('explorer-pest-select');
+            const yearSelect = document.getElementById('explorer-year-select');
             const dateSelect = document.getElementById('explorer-date-select');
             
             const selectedCrop = cropSelect.value;
             const selectedPest = pestSelect.value;
+            const selectedYear = yearSelect.value;
             
             dateSelect.innerHTML = '';
-            if (selectedCrop && selectedPest && explorerData[selectedCrop][selectedPest]) {
-                const dates = Object.keys(explorerData[selectedCrop][selectedPest]).sort();
+            if (selectedCrop && selectedPest && selectedYear && explorerData[selectedCrop][selectedPest][selectedYear]) {
+                const dates = Object.keys(explorerData[selectedCrop][selectedPest][selectedYear]).sort();
                 for (const date of dates) {
                     const opt = document.createElement('option');
                     opt.value = date;
@@ -2040,21 +2069,23 @@
         function updateExplorerImage() {
             const cropSelect = document.getElementById('explorer-crop-select');
             const pestSelect = document.getElementById('explorer-pest-select');
+            const yearSelect = document.getElementById('explorer-year-select');
             const dateSelect = document.getElementById('explorer-date-select');
             const mapImg = document.getElementById('explorer-map-img');
             const title = document.getElementById('explorer-map-title');
             
             const selectedCrop = cropSelect.value;
             const selectedPest = pestSelect.value;
+            const selectedYear = yearSelect.value;
             const selectedDate = dateSelect.value;
             
-            if (selectedCrop && selectedPest && selectedDate) {
-                const imgPath = explorerData[selectedCrop][selectedPest][selectedDate];
+            if (selectedCrop && selectedPest && selectedYear && selectedDate) {
+                const imgPath = explorerData[selectedCrop][selectedPest][selectedYear][selectedDate];
                 mapImg.src = imgPath;
-                if (selectedPest === "Riesgo General") {
-                    title.textContent = "Índice de Vulnerabilidad: " + selectedCrop;
+                if (selectedPest === "Riesgo general") {
+                    title.textContent = "Índice de Vulnerabilidad: " + selectedCrop + " (" + selectedYear + ")";
                 } else {
-                    title.textContent = "Índice de Vulnerabilidad: " + selectedCrop + " - " + selectedPest;
+                    title.textContent = "Índice de Vulnerabilidad: " + selectedCrop + " - " + selectedPest + " (" + selectedYear + ")";
                 }
             }
         }
