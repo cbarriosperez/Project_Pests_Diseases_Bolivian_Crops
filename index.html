@@ -1646,12 +1646,26 @@
 
     <section id="explorar">
         <h2 class="section-title">Explorador de Datos</h2>
-        <p style="font-size: 1.1rem; max-width: 800px;">Herramienta interactiva para visualizar modelos agroclimáticos, mapas espaciales de vulnerabilidad y proyecciones de riesgo a nivel municipal.</p>
+        <p style="font-size: 1.1rem; max-width: 800px;">Consulta el clima de los próximos días, las alertas de plagas y enfermedades que se derivan de él y el riesgo observado en años anteriores, por municipio y cultivo.</p>
 
         <div class="explorer-modes" role="tablist" aria-label="Tipo de información">
-            <button type="button" class="explorer-mode-btn" role="tab" id="modo-pronostico" data-modo="pronostico" aria-controls="panel-pronostico" aria-selected="true">Pronóstico 16 días</button>
-            <button type="button" class="explorer-mode-btn" role="tab" id="modo-alertas" data-modo="alertas" aria-controls="panel-alertas" aria-selected="false">Alertas de plagas</button>
-            <button type="button" class="explorer-mode-btn" role="tab" id="modo-historico" data-modo="historico" aria-controls="panel-historico" aria-selected="false">Riesgo histórico</button>
+            <button type="button" class="explorer-mode-btn" role="tab" id="modo-pronostico" data-modo="pronostico" aria-controls="panel-pronostico" aria-selected="true">
+                <span class="explorer-mode-icon" aria-hidden="true">🌦️</span>
+                <span class="explorer-mode-title">Pronóstico del clima</span>
+                <span class="explorer-mode-desc">Lluvia, temperatura y humedad para los próximos 16 días en cada municipio productor.</span>
+                <span class="explorer-mode-badge">Se actualiza a diario</span>
+            </button>
+            <button type="button" class="explorer-mode-btn" role="tab" id="modo-alertas" data-modo="alertas" aria-controls="panel-alertas" aria-selected="false">
+                <span class="explorer-mode-icon" aria-hidden="true">🐛</span>
+                <span class="explorer-mode-title">Alertas de plagas</span>
+                <span class="explorer-mode-desc">Nivel de riesgo por plaga y cultivo, calculado cada día con el pronóstico.</span>
+                <span class="explorer-mode-badge">Se actualiza a diario</span>
+            </button>
+            <button type="button" class="explorer-mode-btn" role="tab" id="modo-historico" data-modo="historico" aria-controls="panel-historico" aria-selected="false">
+                <span class="explorer-mode-icon" aria-hidden="true">🗺️</span>
+                <span class="explorer-mode-title">Riesgo histórico</span>
+                <span class="explorer-mode-desc" id="modo-historico-desc">Mapas del índice de riesgo calculado con el clima observado en años anteriores.</span>
+            </button>
         </div>
 
         <!-- Pronóstico a 16 días (datos actualizados a diario por GitHub Actions) -->
@@ -2085,6 +2099,18 @@
         function initExplorer() {
             const cropSelect = document.getElementById('explorer-crop-select');
             cropSelect.innerHTML = '';
+            // Periodo cubierto por los mapas históricos (para la tarjeta del Explorador)
+            if (typeof explorerData !== 'undefined') {
+                const anios = new Set();
+                Object.values(explorerData).forEach(pl => Object.values(pl).forEach(an => Object.keys(an).forEach(a => anios.add(+a))));
+                const lista = [...anios].filter(a => a > 1900).sort();
+                const desc = document.getElementById('modo-historico-desc');
+                if (desc && lista.length) {
+                    const periodo = lista.length > 1 ? `${lista[0]}–${lista[lista.length - 1]}` : `${lista[0]}`;
+                    desc.textContent = `Mapas del índice de riesgo calculado con el clima observado (${periodo}).`;
+                }
+            }
+
             // explorerData is loaded from explorer_data.js
             if (typeof explorerData !== 'undefined') {
                 for (const crop in explorerData) {
