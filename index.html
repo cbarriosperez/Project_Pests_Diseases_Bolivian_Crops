@@ -1368,6 +1368,7 @@
                 <option value="historical-climate">Generador de Series Históricas Climáticas (1981-2025)</option>
                 <option value="climate-visualization">Visualización de Variables Climáticas Históricas (Python Notebook)</option>
                 <option value="agroclimatic-models">Modelos Agroclimáticos en R</option>
+                <option value="agroclimatic-models-python">Modelos Agroclimáticos en Python (pronóstico 16 días)</option>
             </select>
         </div>
 
@@ -1553,6 +1554,154 @@
                     <p style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.1rem;">Explora los scripts y la documentación directamente en el repositorio:</p>
                     <a href="Scripts/Modelos_Agroclimaticos_R" target="_blank" style="display: inline-block; background: var(--cat-green); color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 1.1rem; box-shadow: 0 2px 5px rgba(0,0,0, 0.2); transition: all 0.3s ease;">
                         <span style="margin-right: 8px;">📂</span> Ver Carpeta de Modelos Agroclimáticos
+                    </a>
+                </div>
+            </div>
+
+            <!-- Proyecto 4: Modelos Agroclimáticos en Python (pronóstico) -->
+            <div id="project-agroclimatic-models-python" class="script-project-view" style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 2rem; margin-top: 1.5rem; display: none;">
+                <h3 style="color: var(--cat-green); margin-top: 0; font-size: 1.4rem; display: flex; align-items: center; gap: 10px;">
+                    <span>🐍</span> Modelos Agroclimáticos en Python (pronóstico a 16 días)
+                </h3>
+                <p>Versión en <strong>Python</strong> de los Modelos Agroclimáticos en R, adaptada para trabajar con el <strong>pronóstico climático diario por municipio</strong> (Open-Meteo). Cada script calcula el índice de riesgo de una plaga o enfermedad con la misma fórmula, pesos y semáforo que su versión en R.</p>
+                <p>Los índices se calculan por municipio productor, sobre una ventana fija con los primeros días del pronóstico, para cada modelo climático y para el multimodelo. Como el pronóstico se actualiza a diario, las alertas también.</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                    <div style="background: white; padding: 1.5rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <h4 style="color: var(--dark-bg); margin-top: 0;">🚀 Uso</h4>
+                        <ol class="styled-list">
+                            <li>Descargar el script del cultivo y el archivo de pronóstico <a href="data/pronostico/pronostico_latest.json" target="_blank" download><code>pronostico_latest.json</code></a>.</li>
+                            <li>Descargar la lista de municipios productores <a href="data/geo/cultivos_municipios.json" target="_blank" download><code>cultivos_municipios.json</code></a>.</li>
+                            <li>Ejecutar indicando ambas rutas; el resultado es un CSV por municipio y modelo.</li>
+                        </ol>
+                        <code style="background: #1e293b; color: #a5b4fc; padding: 8px 12px; border-radius: 4px; display: block; font-family: monospace; font-size: 0.8rem; white-space: pre-wrap;">python Script_Indice_Riesgo_Papa_Pronostico.py --pronostico pronostico_latest.json --cultivos cultivos_municipios.json --salida resultados/</code>
+                    </div>
+                    <div style="background: white; padding: 1.5rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <h4 style="color: var(--dark-bg); margin-top: 0;">🛠️ Requisitos del Sistema</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">Python 3.9 o superior:</p>
+                        <code style="background: #1e293b; color: #a5b4fc; padding: 8px 12px; border-radius: 4px; display: block; font-family: monospace;">pip install numpy pandas</code>
+                        <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-light);">* <code>correr_modelos.py</code> ejecuta todos los modelos y genera el archivo de alertas que usa esta página.</p>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--dark-bg); margin-top: 2.5rem; margin-bottom: 1rem;">📂 Scripts por Cultivo y Descargas</h4>
+                <div style="background: white; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+                                <th style="padding: 1rem; font-weight: 700; color: var(--dark-bg);">Cultivo / Plaga</th>
+                                <th style="padding: 1rem; font-weight: 700; color: var(--dark-bg);">Script</th>
+                                <th style="padding: 1rem; font-weight: 700; color: var(--dark-bg); text-align: center;">Ventana</th>
+                                <th style="padding: 1rem; font-weight: 700; color: var(--dark-bg); text-align: center;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🧄 <strong>Ajo</strong> – Fusariosis (pudrición basal)</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Ajo_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">15 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Ajo/Script_Indice_Riesgo_Ajo_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🍌 <strong>Banano</strong> – Sigatoka negra</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Banano_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">10 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Banano/Script_Indice_Riesgo_Banano_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">☕ <strong>Café</strong> – Broca del café</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Cafe_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">14 días*</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Cafe/Script_Indice_Riesgo_Cafe_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🧅 <strong>Cebolla</strong> – Mildiu (polvillo negro)</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Cebolla_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">10 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Cebolla/Script_Indice_Riesgo_Cebolla_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🍑 <strong>Durazno</strong> – Arañuela roja</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Durazno_Aranuela_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">10 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Durazno/Aranuela_roja/Script_Indice_Riesgo_Durazno_Aranuela_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🍑 <strong>Durazno</strong> – Oídio</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Durazno_Oidio_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">10 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Durazno/Oidio/Script_Indice_Riesgo_Durazno_Oidio_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🍓 <strong>Frutilla</strong> – Botrytis (moho gris)</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Frutilla_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">10 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Frutilla/Script_Indice_Riesgo_Frutilla_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🥬 <strong>Lechuga</strong> – Sclerotinia sclerotiorum</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Lechuga_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">15 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Lechuga/Script_Indice_Riesgo_Lechuga_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🌽 <strong>Maíz choclo</strong> – Gusano cogollero</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Maiz_Choclo_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">7 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Maiz_Choclo/Script_Indice_Riesgo_Maiz_Choclo_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🌽 <strong>Maíz de grano</strong> – Roya</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Maiz_Grano_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">10 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Maiz_de_Grano/Script_Indice_Riesgo_Maiz_Grano_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🍊 <strong>Naranja</strong> – Mosca de la fruta</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Naranja_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">15 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Naranja/Script_Indice_Riesgo_Naranja_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🥔 <strong>Papa</strong> – Gorgojo de los Andes</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Papa_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">10 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Papa/Script_Indice_Riesgo_Papa_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🌾 <strong>Quinua</strong> – Ticona</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Quinua_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">10 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Quinua/Script_Indice_Riesgo_Quinua_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🍅 <strong>Tomate</strong> – Polilla (Tuta absoluta)</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Tomate_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">10 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Tomate/Script_Indice_Riesgo_Tomate_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 1rem; font-size: 0.9rem;">🍇 <strong>Uva</strong> – Mildiu de la uva</td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">Script_Indice_Riesgo_Uva_Pronostico.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">7 días</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/Uva/Script_Indice_Riesgo_Uva_Pronostico.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border-color); background-color: #f8fafc;">
+                                <td style="padding: 1rem; font-size: 0.9rem;">⚙️ <strong>Todos los cultivos</strong></td>
+                                <td style="padding: 1rem; font-family: monospace; color: var(--cat-green); font-size: 0.85rem;">correr_modelos.py</td>
+                                <td style="padding: 1rem; font-size: 0.9rem; text-align: center;">–</td>
+                                <td style="padding: 1rem; text-align: center;"><a href="Scripts/Modelos_Agroclimaticos_Python/correr_modelos.py" target="_blank" download style="background: var(--cat-green); color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; white-space: nowrap;">Descargar</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 1.5rem; padding: 1rem; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 4px; font-size: 0.9rem;">
+                    <span><strong>Nota:</strong> * El modelo de café usa un periodo de 30 días, más largo que el pronóstico; se evalúan 14 días y el umbral de precipitación acumulada se escala en proporción (30–80 mm → 14–37,3 mm). Si un modelo climático no cubre la ventana completa, su índice queda sin dato.</span>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="Scripts/Modelos_Agroclimaticos_Python" target="_blank" style="display: inline-block; background: var(--cat-green); color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 1.1rem; box-shadow: 0 2px 5px rgba(0,0,0, 0.2); transition: all 0.3s ease;">
+                        <span style="margin-right: 8px;">📂</span> Ver Carpeta de Modelos en Python
                     </a>
                 </div>
             </div>
