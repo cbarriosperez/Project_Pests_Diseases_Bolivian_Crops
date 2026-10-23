@@ -14,11 +14,8 @@ Salida  : data/pronostico/pronostico_latest.json
 Uso     : python Scripts/pronostico/pronostico_municipios.py
           python Scripts/pronostico/pronostico_municipios.py --limite-municipios 20   (prueba rápida)
 
-Variables de entorno opcionales:
-  OPEN_METEO_API_KEY  clave del plan comercial de Open-Meteo. Si existe, se usan los endpoints
-                      "customer-" y se activan automáticamente los modelos de ensamble.
-  USAR_ENSAMBLES      "1"/"0" para forzar o desactivar los ensambles (por defecto: activos solo si
-                      hay API key, porque en el plan gratuito exceden la cuota diaria con 305 municipios).
+Variable de entorno opcional: OPEN_METEO_API_KEY (plan comercial de Open-Meteo). Si existe, se usan
+los endpoints "customer-" con la clave; si no, la API gratuita.
 """
 import argparse
 import json
@@ -53,16 +50,9 @@ CONFIG = {
     "pausa_entre_modelos_seg": 10.0,
     "intentos_por_lote": 4,
     "decimales": 1,
-    # Límites del plan gratuito: 600/min, 5.000/hora, 10.000/día (peso de llamada, no peticiones).
-    # Se deja margen porque la IP de GitHub Actions es compartida.
-    "max_peso_por_minuto": 450,
-    "max_peso_por_hora": 4000,
 }
 
 API_KEY = os.environ.get("OPEN_METEO_API_KEY", "").strip()
-_env_ens = os.environ.get("USAR_ENSAMBLES", "").strip()
-USAR_ENSAMBLES = (_env_ens == "1") if _env_ens in ("0", "1") else bool(API_KEY)
-
 if API_KEY:
     URL_FORECAST = "https://customer-api.open-meteo.com/v1/forecast"
     URL_ENSEMBLE = "https://customer-ensemble-api.open-meteo.com/v1/ensemble"
@@ -80,22 +70,15 @@ METADATA_VARIABLES = {
     "relative_humidity_2m": {"nombre": "Humedad relativa", "unidad": "%"},
 }
 
-# Deterministas: siempre activos. Peso ~1,1 llamadas por municipio cada uno.
-MODELOS_DETERMINISTAS = {
+MODELOS = {
     "GFS":         {"endpoint": "forecast", "candidatos": ["gfs_seamless", "gfs_global"]},
-    "ECMWF IFS":   {"endpoint": "forecast", "candidatos": ["ecmwf_ifs", "ecmwf_ifs025"]},
+    "GEFS":        {"endpoint": "ensemble", "candidatos": ["gfs_seamless", "gfs025", "gfs05"]},
+    "ECMWF-ENS":   {"endpoint": "ensemble", "candidatos": ["ecmwf_ifs025", "ecmwf_ifs04"]},
     "AIFS-Single": {"endpoint": "forecast", "candidatos": ["ecmwf_aifs025_single", "ecmwf_aifs025", "ecmwf_aifs_0_25"]},
+    "AIFS-ENS":    {"endpoint": "ensemble", "candidatos": ["ecmwf_aifs025", "ecmwf_aifs025_ensemble"]},
+    "GEPS":        {"endpoint": "ensemble", "candidatos": ["gem_global", "gem_ensemble"]},
     "ICON Global": {"endpoint": "forecast", "candidatos": ["icon_global", "icon_seamless"]},
-    "GEM Global":  {"endpoint": "forecast", "candidatos": ["gem_global", "gem_seamless"]},
 }
-# Ensambles: solo con USAR_ENSAMBLES. "miembros" es aproximado y solo sirve para estimar el peso.
-MODELOS_ENSAMBLE = {
-    "GEFS":        {"endpoint": "ensemble", "miembros": 31, "candidatos": ["gfs_seamless", "gfs025", "gfs05"]},
-    "ECMWF-ENS":   {"endpoint": "ensemble", "miembros": 51, "candidatos": ["ecmwf_ifs025", "ecmwf_ifs04"]},
-    "AIFS-ENS":    {"endpoint": "ensemble", "miembros": 51, "candidatos": ["ecmwf_aifs025", "ecmwf_aifs025_ensemble"]},
-    "GEPS":        {"endpoint": "ensemble", "miembros": 21, "candidatos": ["gem_global", "gem_ensemble"]},
-}
-MODELOS = {**MODELOS_DETERMINISTAS, **(MODELOS_ENSAMBLE if USAR_ENSAMBLES else {})}
 MULTIMODELO = "MULTIMODELO"
 
 # ----------------------------------------------------------------------------------------------
@@ -132,50 +115,10 @@ def con_clave(params):
     return params
 
 
-class CuotaAgotada(Exception):
-    """La API rechazó por límite horario o diario: reintentar en minutos no sirve."""
-
-
-class Limitador:
-    """Ventanas deslizantes de 60 s y 3.600 s sobre el peso estimado de cada petición.
-    Con API key comercial los límites son otros, así que no se aplica."""
-
-    def __init__(self, por_minuto, por_hora, activo=True):
-        self.por_minuto, self.por_hora, self.activo = por_minuto, por_hora, activo
-        self.registro = []      # (instante, peso)
-        self.total = 0.0
-
-    def _suma(self, ventana, ahora):
-        return sum(w for t, w in self.registro if ahora - t < ventana)
-
-    def esperar(self, peso):
-        self.total += peso
-        if not self.activo:
-            return
-        while True:
-            ahora = time.monotonic()
-            self.registro = [(t, w) for t, w in self.registro if ahora - t < 3600]
-            if (self._suma(60, ahora) + peso <= self.por_minuto
-                    and self._suma(3600, ahora) + peso <= self.por_hora):
-                self.registro.append((ahora, peso))
-                return
-            time.sleep(5)
-
-
-def peso_estimado(n_ubicaciones, n_variables, miembros, n_dias):
-    """Fórmula publicada por Open-Meteo: (variables/10) x (días/14), mínimo 1 cada factor, por ubicación.
-    Las variables se multiplican por los miembros del ensamble."""
-    return n_ubicaciones * max(1.0, n_variables * miembros / 10) * max(1.0, n_dias / 14)
-
-
-limitador = Limitador(CONFIG["max_peso_por_minuto"], CONFIG["max_peso_por_hora"], activo=not API_KEY)
-
-
 # ----------------------------------------------------------------------------------------------
 # Paso 5 — Resolver códigos de modelo y si admiten HR diaria
 # ----------------------------------------------------------------------------------------------
 def _consulta_minima(url, codigo, daily):
-    limitador.esperar(1)
     params = con_clave({
         "latitude": -16.5, "longitude": -68.15, "daily": daily,
         "timezone": CONFIG["timezone"], "forecast_days": 1, "models": codigo,
@@ -209,8 +152,7 @@ def resolver_modelos():
             continue
         ok, _, datos = _consulta_minima(url, encontrado, f"{VARIABLE_HR}_mean")
         hr_diaria = bool(ok and f"{VARIABLE_HR}_mean" in (datos or {}).get("daily", {}))
-        resueltos[nombre] = {"endpoint": spec["endpoint"], "codigo": encontrado, "hr_diaria": hr_diaria,
-                             "miembros": spec.get("miembros", 1)}
+        resueltos[nombre] = {"endpoint": spec["endpoint"], "codigo": encontrado, "hr_diaria": hr_diaria}
         log(f"[OK] {nombre:<12} -> {encontrado:<22} endpoint={spec['endpoint']:<8} "
             f"HR={'diaria' if hr_diaria else 'horaria→diaria'}")
         time.sleep(0.3)
@@ -220,7 +162,7 @@ def resolver_modelos():
 # ----------------------------------------------------------------------------------------------
 # Paso 6 — Descarga resiliente por lotes
 # ----------------------------------------------------------------------------------------------
-def _descargar_lote(lats, lons, url, codigo, fecha_ini, fecha_fin, necesita_hr_horaria, miembros):
+def _descargar_lote(lats, lons, url, codigo, fecha_ini, fecha_fin, necesita_hr_horaria):
     daily = VARIABLES_DIARIAS + ([] if necesita_hr_horaria else [f"{VARIABLE_HR}_mean"])
     params = con_clave({
         "latitude": ",".join(f"{v:.4f}" for v in lats),
@@ -232,20 +174,14 @@ def _descargar_lote(lats, lons, url, codigo, fecha_ini, fecha_fin, necesita_hr_h
     })
     if necesita_hr_horaria:
         params["hourly"] = VARIABLE_HR
-    n_dias = (fecha_fin - fecha_ini).days + 1
-    peso = peso_estimado(len(lats), len(daily) + (1 if necesita_hr_horaria else 0), miembros, n_dias)
 
     ultimo_error = None
     intentos = CONFIG["intentos_por_lote"]
     for intento in range(intentos):
-        limitador.esperar(peso)
         try:
             r = session.get(url, params=params, timeout=180)
             if r.status_code == 429:
-                motivo = r.text[:200]
-                if "Hourly" in motivo or "Daily" in motivo:
-                    raise CuotaAgotada(f"429: {motivo}")
-                raise requests.HTTPError(f"429 Too Many Requests: {motivo}", response=r)
+                raise requests.HTTPError(f"429 Too Many Requests: {r.text[:200]}", response=r)
             if r.status_code == 400:  # error de parámetros: reintentar no sirve
                 raise ValueError(f"400 Bad Request: {r.text[:300]}")
             r.raise_for_status()
@@ -254,21 +190,17 @@ def _descargar_lote(lats, lons, url, codigo, fecha_ini, fecha_fin, necesita_hr_h
         except requests.RequestException as e:
             ultimo_error = limpiar(e)
             if intento < intentos - 1:
-                espera = 65 if "Minutely" in ultimo_error else 30 * (intento + 1)
+                espera = 30 * (intento + 1)
                 log(f"    reintento {intento + 1}/{intentos - 1} en {espera}s: {ultimo_error[:160]}")
                 time.sleep(espera)
     raise RuntimeError(f"Lote fallido tras {intentos} intentos: {ultimo_error}")
 
 
-def descargar(lats, lons, url, codigo, fecha_ini, fecha_fin, necesita_hr_horaria, miembros=1):
-    n = len(lats)
-    # lote más chico para ensambles grandes, de modo que una petición no supere ~60 % del límite por minuto
-    peso_ubic = peso_estimado(1, 5, miembros, (fecha_fin - fecha_ini).days + 1)
-    tam = max(1, min(CONFIG["tam_lote"], int(0.6 * CONFIG["max_peso_por_minuto"] // peso_ubic)))
-    resultados = []
+def descargar(lats, lons, url, codigo, fecha_ini, fecha_fin, necesita_hr_horaria):
+    resultados, n, tam = [], len(lats), CONFIG["tam_lote"]
     for i in range(0, n, tam):
         resultados.extend(_descargar_lote(lats[i:i + tam], lons[i:i + tam], url, codigo,
-                                          fecha_ini, fecha_fin, necesita_hr_horaria, miembros))
+                                          fecha_ini, fecha_fin, necesita_hr_horaria))
         if i + tam < n:
             time.sleep(CONFIG["pausa_entre_lotes_seg"])
     if len(resultados) != n:
@@ -326,13 +258,6 @@ def respuesta_a_matriz(resp, fechas, necesita_hr_horaria):
         hr = _media_miembros(diario, PATRON_HR_DIARIA, n)
     salida[VARIABLE_HR] = hr
 
-    # Día incompleto: al final del horizonte de cada modelo la API puede devolver precipitación y HR
-    # agregadas sobre solo unas horas (subestimadas) mientras Tmax/Tmin vienen nulas. Si falta
-    # alguna temperatura, ese día se descarta completo para este modelo.
-    incompleto = np.isnan(salida["temperature_2m_max"]) | np.isnan(salida["temperature_2m_min"])
-    for var in salida:
-        salida[var] = np.where(incompleto, np.nan, salida[var])
-
     # alinear a las fechas esperadas (por si la API devuelve un rango distinto)
     s_idx = {t: i for i, t in enumerate(tiempos)}
     alineado = {}
@@ -385,7 +310,7 @@ def main():
 
     gids, lats, lons = cargar_municipios(args.limite_municipios)
     log(f"Pronóstico {fecha_ini} → {fecha_fin} | {len(gids)} municipios | "
-        f"API {'comercial' if API_KEY else 'gratuita'} | ensambles {'SÍ' if USAR_ENSAMBLES else 'NO'}")
+        f"API {'comercial' if API_KEY else 'gratuita'}")
 
     modelos = resolver_modelos()
     if not modelos:
@@ -400,16 +325,10 @@ def main():
         log(f"Descargando {nombre} ({info['codigo']})...")
         try:
             respuestas = descargar(lats, lons, url_de(info["endpoint"]), info["codigo"],
-                                   fecha_ini, fecha_fin, necesita_hr_horaria, info["miembros"])
+                                   fecha_ini, fecha_fin, necesita_hr_horaria)
             filas = [respuesta_a_matriz(r, fechas, necesita_hr_horaria) for r in respuestas]
             for var in VARIABLES_SALIDA:
                 datos[var][nombre] = np.vstack([f[var] for f in filas])
-        except CuotaAgotada as e:  # cuota horaria/diaria: los demás modelos también fallarían
-            fallidos[nombre] = limpiar(e)[:300]
-            aviso_gha(f"Cuota de la API agotada en {nombre}; se omiten los modelos restantes. {fallidos[nombre]}")
-            for resto in list(modelos)[list(modelos).index(nombre) + 1:]:
-                fallidos[resto] = "omitido por cuota agotada"
-            break
         except Exception as e:  # un modelo caído no detiene la corrida
             fallidos[nombre] = limpiar(e)[:300]
             aviso_gha(f"Modelo {nombre} omitido: {fallidos[nombre]}")
@@ -445,7 +364,6 @@ def main():
         "modelos": orden_modelos,
         "codigos_modelo": {m: modelos[m]["codigo"] for m in exitosos},
         "modelos_fallidos": fallidos,
-        "usa_ensambles": USAR_ENSAMBLES,
         "dias_con_dato": cobertura,
         "n_modelos_multimodelo": n_modelos_multi,
         "municipios": gids,
@@ -461,11 +379,10 @@ def main():
     dur = round((time.time() - t0) / 60, 1)
     kb = args.salida.stat().st_size / 1024
     log(f"Listo en {dur} min → {args.salida} ({kb:.0f} KB). "
-        f"Modelos OK: {len(exitosos)}/{len(MODELOS)} | peso API estimado: {limitador.total:,.0f} llamadas")
+        f"Modelos OK: {len(exitosos)}/{len(MODELOS)}")
 
     resumen = [f"### Pronóstico {fechas[0]} → {fechas[-1]}", "",
-               f"{len(gids)} municipios · {dur} min · {kb:.0f} KB · ensambles: {'sí' if USAR_ENSAMBLES else 'no'} · "
-               f"peso API estimado: {limitador.total:,.0f} llamadas", "",
+               f"{len(gids)} municipios · {dur} min · {kb:.0f} KB", "",
                "| Modelo | Código | Días con dato | Tiempo (s) | Estado |", "|---|---|---|---|---|"]
     for m in MODELOS:
         if m in exitosos:
