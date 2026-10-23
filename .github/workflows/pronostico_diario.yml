@@ -20,12 +20,12 @@ concurrency:
 jobs:
   pronostico:
     if: github.repository == 'cbarriosperez/Project_Pests_Diseases_Bolivian_Crops'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
 
     steps:
       - name: Checkout (solo lo necesario)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           sparse-checkout: |
             Scripts/pronostico
@@ -33,7 +33,7 @@ jobs:
             data/pronostico
 
       - name: Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip

@@ -6,6 +6,8 @@
     <title>SAT Plagas y Enfermedades - Bolivia</title>
     <!-- Source: Metodología del Proyecto -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <link rel="stylesheet" href="pronostico_explorer.css">
     <style>
         :root {
             /* Climate Action Tracker Color Palette */
@@ -1560,7 +1562,68 @@
     <section id="explorar">
         <h2 class="section-title">Explorador de Datos</h2>
         <p style="font-size: 1.1rem; max-width: 800px;">Herramienta interactiva para visualizar modelos agroclimáticos, mapas espaciales de vulnerabilidad y proyecciones de riesgo a nivel municipal.</p>
-        
+
+        <div class="explorer-modes" role="tablist" aria-label="Tipo de información">
+            <button type="button" class="explorer-mode-btn" role="tab" id="modo-pronostico" data-modo="pronostico" aria-controls="panel-pronostico" aria-selected="true">Pronóstico 16 días</button>
+            <button type="button" class="explorer-mode-btn" role="tab" id="modo-historico" data-modo="historico" aria-controls="panel-historico" aria-selected="false">Riesgo histórico</button>
+        </div>
+
+        <!-- Pronóstico a 16 días (datos actualizados a diario por GitHub Actions) -->
+        <div class="explorer-panel" id="panel-pronostico" data-modo="pronostico" role="tabpanel" aria-labelledby="modo-pronostico">
+            <div class="explorer-container">
+                <div id="pr-cargando" class="pr-loading">Cargando el pronóstico…</div>
+                <div id="pr-contenido" class="pr-layout" hidden>
+                    <div class="explorer-sidebar">
+                        <div class="filter-group">
+                            <label for="pr-cultivo">Cultivo</label>
+                            <select id="pr-cultivo"></select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="pr-variable">Variable</label>
+                            <select id="pr-variable"></select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="pr-modelo">Modelo</label>
+                            <select id="pr-modelo"></select>
+                        </div>
+                        <p class="pr-help">Haz clic en un municipio para ver su pronóstico día a día en todos los modelos.</p>
+                        <div class="pr-run">
+                            <div id="pr-corrida"></div>
+                            <button type="button" class="pr-link-btn" id="pr-csv">Descargar datos del cultivo (CSV)</button>
+                        </div>
+                    </div>
+                    <div class="explorer-main">
+                        <div id="pr-alerta" class="pr-alert" role="status" hidden></div>
+                        <div class="pr-head">
+                            <div>
+                                <h3 id="pr-titulo"></h3>
+                                <p id="pr-subtitulo"></p>
+                            </div>
+                            <div id="pr-fecha" class="pr-date" aria-live="polite"></div>
+                        </div>
+                        <div id="pr-mapa" class="pr-map" role="region" aria-label="Mapa del pronóstico por municipio"></div>
+                        <div id="pr-leyenda" class="pr-legend"></div>
+                        <div class="pr-days">
+                            <button type="button" id="pr-play" class="pr-play" aria-label="Recorrer los 16 días">▶</button>
+                            <div id="pr-dias" class="pr-day-strip" role="group" aria-label="Día del pronóstico"></div>
+                        </div>
+                        <p id="pr-dias-nota" class="pr-days-note"></p>
+                        <div class="pr-series">
+                            <div id="pr-serie-vacia" class="pr-series-empty">Haz clic en un municipio del mapa para comparar su pronóstico en todos los modelos.</div>
+                            <div id="pr-serie-contenido" hidden>
+                                <h4 id="pr-serie-titulo"></h4>
+                                <p id="pr-serie-meta" class="pr-series-meta"></p>
+                                <div class="pr-chart-wrap"><canvas id="pr-grafico"></canvas></div>
+                            </div>
+                        </div>
+                        <p class="pr-source">Pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0), consultado en un punto representativo dentro de cada municipio; no es un promedio de toda su superficie. Se actualiza todos los días a las 06:00, hora de Bolivia.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Riesgo histórico (mapas de los modelos agroclimáticos) -->
+        <div class="explorer-panel" id="panel-historico" data-modo="historico" role="tabpanel" aria-labelledby="modo-historico" hidden>
         <div class="explorer-container">
             <div class="explorer-sidebar">
                 <h3 style="margin:0 0 0.5rem 0; font-size: 1.2rem; color: var(--dark-bg);">Filtros Dinámicos</h3>
@@ -1600,6 +1663,7 @@
                 <img id="explorer-map-img" class="explorer-img" src="figures/data_explorer_map.png" alt="Mapa de calor de riesgo en Bolivia">
                 <p style="font-size: 0.85rem; color: #888; text-align: right; margin-top: 10px; font-style: italic;">* Los datos espaciales son proyecciones del modelo de inteligencia agroclimática.</p>
             </div>
+        </div>
         </div>
     </section>
 
@@ -2094,5 +2158,8 @@
         document.addEventListener('DOMContentLoaded', initExplorer);
     </script>
     <script src="explorer_data.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <script src="pronostico_explorer.js"></script>
 </body>
 </html>
