@@ -910,174 +910,39 @@
             background-color: #4a8031;
         }
 
-        /* Timeline inside Calendario */
-        .project-timeline {
+        /* Fases del proyecto (Presentación) */
+        .project-phases {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin: 1.5rem 0 2.5rem;
+            max-width: 900px;
+        }
+        .project-phase {
             position: relative;
-            max-width: 800px;
-            margin: 2rem 0 4rem 1rem;
-            padding-left: 2rem;
-            border-left: 3px solid var(--cat-light-green);
-        }
-        .timeline-step {
-            position: relative;
-            margin-bottom: 2rem;
-        }
-        .timeline-step::before {
-            content: '';
-            position: absolute;
-            left: -2.7rem;
-            top: 0;
-            width: 1rem;
-            height: 1rem;
-            background-color: #ffffff;
-            border: 3px solid var(--cat-green);
-            border-radius: 50%;
-        }
-        .timeline-step-date {
-            font-size: 0.85rem;
-            color: var(--cat-green);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: block;
-            margin-bottom: 0.25rem;
-        }
-        .timeline-step-title {
-            font-size: 1.15rem;
-            color: var(--dark-bg);
-            font-weight: 700;
-            margin: 0 0 0.5rem 0;
-        }
-
-        /* IPCC Style Events List */
-        .event-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .event-card {
-            display: flex;
-            background-color: #ffffff;
+            background: #ffffff;
             border: 1px solid var(--border-color);
+            border-top: 4px solid var(--cat-green);
             border-radius: 4px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-            transition: box-shadow 0.2s;
-        }
-        .event-card:hover {
-            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
-        }
-        .event-date-block {
-            background-color: #f7f9fb;
-            border-right: 1px solid var(--border-color);
-            padding: 1.5rem 1rem;
-            min-width: 120px;
-            text-align: center;
+            padding: 0.7rem 0.9rem;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            gap: 0.15rem;
         }
-        .event-month {
-            font-size: 1rem;
+        .project-phase-date {
+            font-size: 0.75rem;
             font-weight: 700;
-            color: var(--text-light);
-            text-transform: uppercase;
-        }
-        .event-days {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--dark-bg);
-            line-height: 1;
-            margin: 0.25rem 0;
-        }
-        .event-year {
-            font-size: 0.9rem;
-            color: var(--text-light);
-        }
-        .event-details {
-            padding: 1.5rem;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .event-title {
-            font-size: 1.25rem;
-            color: var(--dark-bg);
-            font-weight: 700;
-            margin: 0 0 0.5rem 0;
-        }
-        .event-meta {
-            font-size: 0.9rem;
-            color: #666;
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .event-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-        .event-badge {
-            background-color: var(--cat-green);
-            color: #fff;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
             letter-spacing: 0.5px;
-        }
-        .event-badge.virtual {
-            background-color: var(--cat-yellow);
-            color: var(--dark-bg);
-        }
-
-        /* Event Filters */
-        .event-filters {
-            display: flex;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-            padding: 1rem 1.5rem;
-            background-color: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .filter-item {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        .filter-item label {
-            font-weight: 700;
-            font-size: 0.9rem;
-            color: var(--dark-bg);
             text-transform: uppercase;
+            color: var(--cat-green);
         }
-        .event-filters select {
-            padding: 0.5rem 1rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            background-color: #ffffff;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.9rem;
-            min-width: 150px;
+        .project-phase-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--dark-bg);
         }
-        .event-card.hidden {
-            display: none;
-        }
-        #no-events-msg {
-            padding: 2rem;
-            text-align: center;
-            background: #f1f5f9;
-            border-radius: 4px;
-            color: var(--text-light);
-            font-style: italic;
+        @media (max-width: 768px) {
+            .project-phases { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 768px) {
@@ -1119,7 +984,6 @@
             <li><a href="#reportes">Reportes</a></li>
             <li><a href="#scripts">Scripts</a></li>
             <li><a href="#explorar">Explorar Datos</a></li>
-            <li><a href="#calendario">Calendario</a></li>
         </ul>
     </nav>
 
@@ -1159,13 +1023,6 @@
                     <p class="summary">Ejecutado por Alliance of Bioversity International & CIAT en conjunto con YAPU Solutions protegiendo la agricultura boliviana.</p>
                 </div>
             </div>
-            <!-- Slide 3 -->
-            <div class="carousel-slide">
-                <div class="hero-content">
-                    <h1>Cronograma de Ejecución</h1>
-                    <p class="summary">Desarrollo programado entre Febrero y Octubre de 2026 para implementar alertas accionables y oportunas.</p>
-                </div>
-            </div>
         </div>
 
         <button class="carousel-control prev" onclick="moveSlide(-1)">&#10094;</button>
@@ -1176,7 +1033,6 @@
             <span class="dot" onclick="currentSlide(2)"></span>
             <span class="dot" onclick="currentSlide(3)"></span>
             <span class="dot" onclick="currentSlide(4)"></span>
-            <span class="dot" onclick="currentSlide(5)"></span>
         </div>
     </header>
 
@@ -1185,6 +1041,11 @@
         
         <p>El presente proyecto tiene como objetivo desarrollar e implementar un <strong>Sistema de Alerta Temprana (SAT) para el monitoreo de plagas y enfermedades</strong> en cultivos clave de Bolivia. Este sistema está diseñado para anticipar brotes epidemiológicos mediante el análisis de condiciones climáticas históricas y pronósticos estacionales, permitiendo a los agricultores e instituciones tomar medidas preventivas.</p>
         
+        <div class="project-phases" aria-label="Fases del proyecto (2026)">
+            <div class="project-phase"><span class="project-phase-date">Feb – Mar</span><span class="project-phase-title">Línea base y zonas geográficas</span></div>
+            <div class="project-phase"><span class="project-phase-date">Abr – Jun</span><span class="project-phase-title">Indicadores y modelado espacial</span></div>
+            <div class="project-phase"><span class="project-phase-date">Jul – Oct</span><span class="project-phase-title">Motor de alertas y pronósticos</span></div>
+        </div>
         <div class="presentation-header" style="margin-bottom: 3rem;">
             <p style="color: var(--text-color); max-width: 900px;">El proyecto se enfoca en las principales áreas agrícolas de Bolivia, analizando cultivos esenciales para la economía y seguridad alimentaria. Haz clic en cada cultivo para conocer su relevancia estratégica:</p>
             
@@ -1946,129 +1807,6 @@
         </div>
     </section>
 
-    <section id="calendario" class="light-bg">
-        <h2 class="section-title">Calendario y Plan de Trabajo</h2>
-        <p style="font-size: 1.1rem; max-width: 800px; margin-bottom: 3rem;">Visualiza el horizonte temporal del proyecto, junto con los eventos clave, reuniones y talleres programados con los actores regionales en Bolivia.</p>
-
-        <!-- Timeline Section -->
-        <h3 style="color: var(--dark-bg); margin-bottom: 1.5rem;">Plan de Trabajo General (2026)</h3>
-        <div class="project-timeline">
-            <div class="timeline-step">
-                <span class="timeline-step-date">Febrero - Marzo</span>
-                <h4 class="timeline-step-title">Fase 1: Línea Base y Zonas Geográficas</h4>
-                <p style="margin:0; font-size:0.95rem; color:var(--text-light);">Identificación de áreas de producción agrícola y validación de plagas prioritarias. (Actividades 1 y 2)</p>
-            </div>
-            <div class="timeline-step">
-                <span class="timeline-step-date">Abril - Junio</span>
-                <h4 class="timeline-step-title">Fase 2: Indicadores y Modelado Espacial</h4>
-                <p style="margin:0; font-size:0.95rem; color:var(--text-light);">Generación de índices agroclimáticos y mapeo de alta resolución espaciotemporal. (Actividades 3 y 4)</p>
-            </div>
-            <div class="timeline-step">
-                <span class="timeline-step-date">Julio - Octubre</span>
-                <h4 class="timeline-step-title">Fase 3: Motor de Alertas y Pronósticos</h4>
-                <p style="margin:0; font-size:0.95rem; color:var(--text-light);">Implementación de pronósticos estacionales y despliegue del motor de Alertas Tempranas. (Actividad 5)</p>
-            </div>
-        </div>
-
-        <!-- IPCC Style Event Calendar -->
-        <h3 style="color: var(--dark-bg); margin-top: 4rem; margin-bottom: 1.5rem;">Agenda de Eventos y Talleres</h3>
-        
-        <div class="event-filters">
-            <div class="filter-item">
-                <label for="month-filter">Filtrar por Mes:</label>
-                <select id="month-filter" onchange="filterEvents()">
-                    <option value="all">Ver todos los meses</option>
-                    <option value="Feb">Febrero</option>
-                    <option value="May">Mayo</option>
-                    <option value="Ago">Agosto</option>
-                    <option value="Oct">Octubre</option>
-                </select>
-            </div>
-            <div class="filter-item">
-                <label for="type-filter">Tipo de Actividad:</label>
-                <select id="type-filter" onchange="filterEvents()">
-                    <option value="all">Todas las categorías</option>
-                    <option value="Taller">Talleres / Workshops</option>
-                    <option value="Reunion">Mesas Técnicas / Reuniones</option>
-                    <option value="Capacitacion">Capacitaciones de Campo</option>
-                    <option value="Hito">Hitos del Proyecto</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="event-list" id="event-list-container">
-            <!-- Event 1 -->
-            <div class="event-card" data-month="Feb" data-type="Taller">
-                <div class="event-date-block">
-                    <span class="event-month">Feb</span>
-                    <span class="event-days">16-18</span>
-                    <span class="event-year">2026</span>
-                </div>
-                <div class="event-details">
-                    <h4 class="event-title">Inception Workshop: Lanzamiento Oficial del Proyecto</h4>
-                    <div class="event-meta">
-                        <span class="event-badge">Presencial</span>
-                        <span class="event-meta-item">📍 Cochabamba, Bolivia</span>
-                        <span class="event-meta-item">👥 CIAT, YAPU, Socios Locales</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Event 2 -->
-            <div class="event-card" data-month="May" data-type="Reunion">
-                <div class="event-date-block">
-                    <span class="event-month">May</span>
-                    <span class="event-days">20</span>
-                    <span class="event-year">2026</span>
-                </div>
-                <div class="event-details">
-                    <h4 class="event-title">Mesa Técnica: Validación de Indicadores Agroclimáticos</h4>
-                    <div class="event-meta">
-                        <span class="event-badge virtual">Virtual</span>
-                        <span class="event-meta-item">💻 Plataforma Teams</span>
-                        <span class="event-meta-item">👥 Agrónomos, Extensionistas</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Event 3 -->
-            <div class="event-card" data-month="Ago" data-type="Capacitacion">
-                <div class="event-date-block">
-                    <span class="event-month">Ago</span>
-                    <span class="event-days">10-14</span>
-                    <span class="event-year">2026</span>
-                </div>
-                <div class="event-details">
-                    <h4 class="event-title">Capacitación en Campo: Uso temprano de Alertas de Vulnerabilidad</h4>
-                    <div class="event-meta">
-                        <span class="event-badge">Presencial</span>
-                        <span class="event-meta-item">📍 Santa Cruz y Tarija</span>
-                        <span class="event-meta-item">👥 Productores Locales</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Event 4 -->
-            <div class="event-card" data-month="Oct" data-type="Hito">
-                <div class="event-date-block">
-                    <span class="event-month">Oct</span>
-                    <span class="event-days">28</span>
-                    <span class="event-year">2026</span>
-                </div>
-                <div class="event-details">
-                    <h4 class="event-title">Entrega Final y Cierre Operativo</h4>
-                    <div class="event-meta">
-                        <span class="event-badge" style="background:#232d39;">Hito</span>
-                        <span class="event-meta-item">📍 La Paz, Bolivia</span>
-                        <span class="event-meta-item">👥 Alliance Bioversity</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="no-events-msg" style="display: none;">No se encontraron eventos para los filtros seleccionados.</div>
-        </div>
-    </section>
-
     <footer>
         <p><strong>Proyecto:</strong> Desarrollo e Implementación de un Sistema de Alerta Temprana para el Monitoreo de Plagas y Enfermedades en Cultivos Bolivianos</p>
         <p>&copy; 2026 Alliance of Bioversity International & CIAT | YAPU Solutions</p>
@@ -2197,36 +1935,6 @@
                 })
                 .catch(function () { /* sin dato vivo: el banner se muestra igual */ });
         })();
-
-        // Calendar Filtering Logic
-        function filterEvents() {
-            const selectedMonth = document.getElementById('month-filter').value;
-            const selectedType = document.getElementById('type-filter').value;
-            const cards = document.querySelectorAll('.event-card');
-            const noEventsMsg = document.getElementById('no-events-msg');
-            let visibleCount = 0;
-
-            cards.forEach(card => {
-                const cardMonth = card.getAttribute('data-month');
-                const cardType = card.getAttribute('data-type');
-
-                const monthMatch = (selectedMonth === 'all' || cardMonth === selectedMonth);
-                const typeMatch = (selectedType === 'all' || cardType === selectedType);
-
-                if (monthMatch && typeMatch) {
-                    card.classList.remove('hidden');
-                    visibleCount++;
-                } else {
-                    card.classList.add('hidden');
-                }
-            });
-
-            if (visibleCount === 0) {
-                noEventsMsg.style.display = 'block';
-            } else {
-                noEventsMsg.style.display = 'none';
-            }
-        }
 
         // Crop Info Logic
         function showCropInfo(cropName) {
