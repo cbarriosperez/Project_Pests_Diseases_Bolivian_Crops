@@ -79,6 +79,7 @@
             margin: 0;
             padding: 0;
             gap: 2rem;
+            align-items: center;
         }
 
         nav a {
@@ -93,6 +94,28 @@
 
         nav a:hover, nav a.active {
             color: var(--cat-green);
+        }
+
+        /* Acción principal del menú: Explorar Datos */
+        nav a.nav-cta {
+            display: inline-block;
+            color: #ffffff;
+            background: var(--cat-green);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        nav a.nav-cta:hover {
+            color: #ffffff;
+            background: #4f8f33;
+        }
+        nav a.nav-cta.active {
+            color: #ffffff;
+            background: var(--dark-bg);
+        }
+        nav a.nav-cta:focus-visible {
+            outline: 3px solid var(--cat-light-green);
+            outline-offset: 2px;
         }
 
         /* Hero Carousel */
@@ -980,10 +1003,10 @@
         <div class="logo">SAT Bolivia - Plagas y Enfermedades</div>
         <ul>
             <li><a href="#presentacion">Presentación</a></li>
+            <li><a href="#explorar" class="nav-cta">Explorar Datos</a></li>
             <li><a href="#componentes">Metodología</a></li>
             <li><a href="#reportes">Reportes</a></li>
             <li><a href="#scripts">Scripts</a></li>
-            <li><a href="#explorar">Explorar Datos</a></li>
         </ul>
     </nav>
 
@@ -1131,7 +1154,184 @@
         </div>
     </section>
 
-    <section id="componentes">
+    <section id="explorar">
+        <h2 class="section-title">Explorador de Datos</h2>
+        <p style="font-size: 1.1rem; max-width: 800px;">Consulta el clima de los próximos días, las alertas de plagas y enfermedades que se derivan de él y el riesgo observado en años anteriores, por municipio y cultivo.</p>
+
+        <div class="explorer-modes" role="tablist" aria-label="Tipo de información">
+            <button type="button" class="explorer-mode-btn" role="tab" id="modo-pronostico" data-modo="pronostico" aria-controls="panel-pronostico" aria-selected="true">
+                <span class="explorer-mode-icon" aria-hidden="true">🌦️</span>
+                <span class="explorer-mode-title">Pronóstico del clima</span>
+                <span class="explorer-mode-desc">Lluvia, temperatura y humedad para los próximos 16 días en cada municipio productor.</span>
+                <span class="explorer-mode-badge">Se actualiza a diario</span>
+            </button>
+            <button type="button" class="explorer-mode-btn" role="tab" id="modo-alertas" data-modo="alertas" aria-controls="panel-alertas" aria-selected="false">
+                <span class="explorer-mode-icon" aria-hidden="true">🐛</span>
+                <span class="explorer-mode-title">Alertas de plagas</span>
+                <span class="explorer-mode-desc">Nivel de riesgo por plaga y cultivo, calculado cada día con el pronóstico.</span>
+                <span class="explorer-mode-badge">Se actualiza a diario</span>
+            </button>
+            <button type="button" class="explorer-mode-btn" role="tab" id="modo-historico" data-modo="historico" aria-controls="panel-historico" aria-selected="false">
+                <span class="explorer-mode-icon" aria-hidden="true">🗺️</span>
+                <span class="explorer-mode-title">Riesgo histórico</span>
+                <span class="explorer-mode-desc" id="modo-historico-desc">Mapas del índice de riesgo calculado con el clima observado en años anteriores.</span>
+            </button>
+        </div>
+
+        <!-- Pronóstico a 16 días (datos actualizados a diario por GitHub Actions) -->
+        <div class="explorer-panel" id="panel-pronostico" data-modo="pronostico" role="tabpanel" aria-labelledby="modo-pronostico">
+            <div class="explorer-container">
+                <div id="pr-cargando" class="pr-loading">Cargando el pronóstico…</div>
+                <div id="pr-contenido" class="pr-layout" hidden>
+                    <div class="explorer-sidebar">
+                        <div class="filter-group">
+                            <label for="pr-cultivo">Cultivo</label>
+                            <select id="pr-cultivo"></select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="pr-variable">Variable</label>
+                            <select id="pr-variable"></select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="pr-modelo">Modelo</label>
+                            <select id="pr-modelo"></select>
+                        </div>
+                        <p class="pr-help">Haz clic en un municipio para ver su pronóstico día a día en todos los modelos.</p>
+                        <div class="pr-run">
+                            <div id="pr-corrida"></div>
+                            <button type="button" class="pr-link-btn" id="pr-csv">Descargar datos del cultivo (CSV)</button>
+                        </div>
+                    </div>
+                    <div class="explorer-main">
+                        <div id="pr-alerta" class="pr-alert" role="status" hidden></div>
+                        <div class="pr-head">
+                            <div>
+                                <h3 id="pr-titulo"></h3>
+                                <p id="pr-subtitulo"></p>
+                            </div>
+                            <div id="pr-fecha" class="pr-date" aria-live="polite"></div>
+                        </div>
+                        <div id="pr-mapa" class="pr-map" role="region" aria-label="Mapa del pronóstico por municipio"></div>
+                        <div id="pr-leyenda" class="pr-legend"></div>
+                        <div class="pr-days">
+                            <button type="button" id="pr-play" class="pr-play" aria-label="Recorrer los 16 días">▶</button>
+                            <div id="pr-dias" class="pr-day-strip" role="group" aria-label="Día del pronóstico"></div>
+                        </div>
+                        <p id="pr-dias-nota" class="pr-days-note"></p>
+                        <div class="pr-series">
+                            <div id="pr-serie-vacia" class="pr-series-empty">Haz clic en un municipio del mapa para comparar su pronóstico en todos los modelos.</div>
+                            <div id="pr-serie-contenido" hidden>
+                                <h4 id="pr-serie-titulo"></h4>
+                                <p id="pr-serie-meta" class="pr-series-meta"></p>
+                                <div class="pr-chart-wrap"><canvas id="pr-grafico"></canvas></div>
+                            </div>
+                        </div>
+                        <p class="pr-source">Pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0), consultado en un punto representativo dentro de cada municipio; no es un promedio de toda su superficie. Se actualiza todos los días a las 06:00, hora de Bolivia.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas de plagas y enfermedades (modelos agroclimáticos sobre el pronóstico, actualizado a diario) -->
+        <div class="explorer-panel" id="panel-alertas" data-modo="alertas" role="tabpanel" aria-labelledby="modo-alertas" hidden>
+            <div class="explorer-container">
+                <div id="al-cargando" class="pr-loading">Cargando las alertas…</div>
+                <div id="al-contenido" class="pr-layout" hidden>
+                    <div class="explorer-sidebar">
+                        <div class="filter-group">
+                            <label for="al-cultivo">Cultivo</label>
+                            <select id="al-cultivo"></select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="al-plaga">Plaga / enfermedad</label>
+                            <select id="al-plaga"></select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="al-modelo">Modelo climático</label>
+                            <select id="al-modelo"></select>
+                        </div>
+                        <p class="pr-help">Haz clic en un municipio para ver qué condiciones se cumplen y cómo lo ve cada modelo.</p>
+                        <div id="al-formula" class="al-formula"></div>
+                        <div class="pr-run">
+                            <div id="al-corrida"></div>
+                            <button type="button" class="pr-link-btn" id="al-csv">Descargar alertas del cultivo (CSV)</button>
+                        </div>
+                    </div>
+                    <div class="explorer-main">
+                        <div id="al-alerta" class="pr-alert" role="status" hidden></div>
+                        <div class="pr-head">
+                            <div>
+                                <h3 id="al-titulo"></h3>
+                                <p id="al-subtitulo"></p>
+                            </div>
+                            <div id="al-ventana" class="pr-date" aria-live="polite"></div>
+                        </div>
+                        <div id="al-resumen" class="al-resumen" aria-live="polite"></div>
+                        <div id="al-mapa" class="pr-map" role="region" aria-label="Mapa de alertas por municipio"></div>
+                        <div id="al-leyenda" class="pr-legend"></div>
+                        <p id="al-nota-modelos" class="pr-days-note" style="margin-left:0"></p>
+                        <div class="al-bottom">
+                            <div>
+                                <h4>Municipios con mayor riesgo</h4>
+                                <div id="al-ranking"></div>
+                            </div>
+                            <div>
+                                <div id="al-detalle-vacio" class="pr-series-empty">Haz clic en un municipio del mapa o de la lista para ver el detalle.</div>
+                                <div id="al-detalle" hidden></div>
+                            </div>
+                        </div>
+                        <p class="pr-source">Índices calculados con los <a href="#scripts">modelos agroclimáticos en Python</a> a partir del pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0), en un punto representativo de cada municipio. Cada plaga usa los primeros días del pronóstico (su ventana) y se actualiza todos los días junto con el pronóstico.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Riesgo histórico (mapas de los modelos agroclimáticos) -->
+        <div class="explorer-panel" id="panel-historico" data-modo="historico" role="tabpanel" aria-labelledby="modo-historico" hidden>
+        <div class="explorer-container">
+            <div class="explorer-sidebar">
+                <h3 style="margin:0 0 0.5rem 0; font-size: 1.2rem; color: var(--dark-bg);">Filtros Dinámicos</h3>
+                <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0;">Selecciona las variables para actualizar el mapa interactivo.</p>
+                
+                <div class="filter-group">
+                    <label>Cultivo de Interés</label>
+                    <select id="explorer-crop-select" onchange="updateExplorerPests()">
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Plaga / Enfermedad</label>
+                    <select id="explorer-pest-select" onchange="updateExplorerYears()">
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Año</label>
+                    <select id="explorer-year-select" onchange="updateExplorerDates()">
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Escenario Temporal</label>
+                    <select id="explorer-date-select" onchange="updateExplorerImage()">
+                    </select>
+                </div>
+                
+                <button class="explorer-btn" onclick="updateExplorerImage()">Actualizar Mapa</button>
+            </div>
+            <div class="explorer-main">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 id="explorer-map-title" style="margin: 0; color: var(--dark-bg);">Índice de Vulnerabilidad</h3>
+                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--cat-orange); background: #fff8f1; padding: 4px 10px; border-radius: 4px; border: 1px solid var(--cat-orange);">Riesgo Elevado</span>
+                </div>
+                <img id="explorer-map-img" class="explorer-img" src="figures/data_explorer_map.png" alt="Mapa de calor de riesgo en Bolivia">
+                <p style="font-size: 0.85rem; color: #888; text-align: right; margin-top: 10px; font-style: italic;">* Los datos espaciales son proyecciones del modelo de inteligencia agroclimática.</p>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <section id="componentes" class="light-bg">
         <h2 class="section-title">Metodología y Actividades</h2>
         <p style="max-width: 800px; font-size: 1.1rem; margin-bottom: 0;">El sistema se ha construido a lo largo de 5 actividades interconectadas. Explora cada fase de la metodología haciendo clic en el panel lateral.</p>
 
@@ -1641,183 +1841,6 @@
                     </a>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <section id="explorar">
-        <h2 class="section-title">Explorador de Datos</h2>
-        <p style="font-size: 1.1rem; max-width: 800px;">Consulta el clima de los próximos días, las alertas de plagas y enfermedades que se derivan de él y el riesgo observado en años anteriores, por municipio y cultivo.</p>
-
-        <div class="explorer-modes" role="tablist" aria-label="Tipo de información">
-            <button type="button" class="explorer-mode-btn" role="tab" id="modo-pronostico" data-modo="pronostico" aria-controls="panel-pronostico" aria-selected="true">
-                <span class="explorer-mode-icon" aria-hidden="true">🌦️</span>
-                <span class="explorer-mode-title">Pronóstico del clima</span>
-                <span class="explorer-mode-desc">Lluvia, temperatura y humedad para los próximos 16 días en cada municipio productor.</span>
-                <span class="explorer-mode-badge">Se actualiza a diario</span>
-            </button>
-            <button type="button" class="explorer-mode-btn" role="tab" id="modo-alertas" data-modo="alertas" aria-controls="panel-alertas" aria-selected="false">
-                <span class="explorer-mode-icon" aria-hidden="true">🐛</span>
-                <span class="explorer-mode-title">Alertas de plagas</span>
-                <span class="explorer-mode-desc">Nivel de riesgo por plaga y cultivo, calculado cada día con el pronóstico.</span>
-                <span class="explorer-mode-badge">Se actualiza a diario</span>
-            </button>
-            <button type="button" class="explorer-mode-btn" role="tab" id="modo-historico" data-modo="historico" aria-controls="panel-historico" aria-selected="false">
-                <span class="explorer-mode-icon" aria-hidden="true">🗺️</span>
-                <span class="explorer-mode-title">Riesgo histórico</span>
-                <span class="explorer-mode-desc" id="modo-historico-desc">Mapas del índice de riesgo calculado con el clima observado en años anteriores.</span>
-            </button>
-        </div>
-
-        <!-- Pronóstico a 16 días (datos actualizados a diario por GitHub Actions) -->
-        <div class="explorer-panel" id="panel-pronostico" data-modo="pronostico" role="tabpanel" aria-labelledby="modo-pronostico">
-            <div class="explorer-container">
-                <div id="pr-cargando" class="pr-loading">Cargando el pronóstico…</div>
-                <div id="pr-contenido" class="pr-layout" hidden>
-                    <div class="explorer-sidebar">
-                        <div class="filter-group">
-                            <label for="pr-cultivo">Cultivo</label>
-                            <select id="pr-cultivo"></select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="pr-variable">Variable</label>
-                            <select id="pr-variable"></select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="pr-modelo">Modelo</label>
-                            <select id="pr-modelo"></select>
-                        </div>
-                        <p class="pr-help">Haz clic en un municipio para ver su pronóstico día a día en todos los modelos.</p>
-                        <div class="pr-run">
-                            <div id="pr-corrida"></div>
-                            <button type="button" class="pr-link-btn" id="pr-csv">Descargar datos del cultivo (CSV)</button>
-                        </div>
-                    </div>
-                    <div class="explorer-main">
-                        <div id="pr-alerta" class="pr-alert" role="status" hidden></div>
-                        <div class="pr-head">
-                            <div>
-                                <h3 id="pr-titulo"></h3>
-                                <p id="pr-subtitulo"></p>
-                            </div>
-                            <div id="pr-fecha" class="pr-date" aria-live="polite"></div>
-                        </div>
-                        <div id="pr-mapa" class="pr-map" role="region" aria-label="Mapa del pronóstico por municipio"></div>
-                        <div id="pr-leyenda" class="pr-legend"></div>
-                        <div class="pr-days">
-                            <button type="button" id="pr-play" class="pr-play" aria-label="Recorrer los 16 días">▶</button>
-                            <div id="pr-dias" class="pr-day-strip" role="group" aria-label="Día del pronóstico"></div>
-                        </div>
-                        <p id="pr-dias-nota" class="pr-days-note"></p>
-                        <div class="pr-series">
-                            <div id="pr-serie-vacia" class="pr-series-empty">Haz clic en un municipio del mapa para comparar su pronóstico en todos los modelos.</div>
-                            <div id="pr-serie-contenido" hidden>
-                                <h4 id="pr-serie-titulo"></h4>
-                                <p id="pr-serie-meta" class="pr-series-meta"></p>
-                                <div class="pr-chart-wrap"><canvas id="pr-grafico"></canvas></div>
-                            </div>
-                        </div>
-                        <p class="pr-source">Pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0), consultado en un punto representativo dentro de cada municipio; no es un promedio de toda su superficie. Se actualiza todos los días a las 06:00, hora de Bolivia.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Alertas de plagas y enfermedades (modelos agroclimáticos sobre el pronóstico, actualizado a diario) -->
-        <div class="explorer-panel" id="panel-alertas" data-modo="alertas" role="tabpanel" aria-labelledby="modo-alertas" hidden>
-            <div class="explorer-container">
-                <div id="al-cargando" class="pr-loading">Cargando las alertas…</div>
-                <div id="al-contenido" class="pr-layout" hidden>
-                    <div class="explorer-sidebar">
-                        <div class="filter-group">
-                            <label for="al-cultivo">Cultivo</label>
-                            <select id="al-cultivo"></select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="al-plaga">Plaga / enfermedad</label>
-                            <select id="al-plaga"></select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="al-modelo">Modelo climático</label>
-                            <select id="al-modelo"></select>
-                        </div>
-                        <p class="pr-help">Haz clic en un municipio para ver qué condiciones se cumplen y cómo lo ve cada modelo.</p>
-                        <div id="al-formula" class="al-formula"></div>
-                        <div class="pr-run">
-                            <div id="al-corrida"></div>
-                            <button type="button" class="pr-link-btn" id="al-csv">Descargar alertas del cultivo (CSV)</button>
-                        </div>
-                    </div>
-                    <div class="explorer-main">
-                        <div id="al-alerta" class="pr-alert" role="status" hidden></div>
-                        <div class="pr-head">
-                            <div>
-                                <h3 id="al-titulo"></h3>
-                                <p id="al-subtitulo"></p>
-                            </div>
-                            <div id="al-ventana" class="pr-date" aria-live="polite"></div>
-                        </div>
-                        <div id="al-resumen" class="al-resumen" aria-live="polite"></div>
-                        <div id="al-mapa" class="pr-map" role="region" aria-label="Mapa de alertas por municipio"></div>
-                        <div id="al-leyenda" class="pr-legend"></div>
-                        <p id="al-nota-modelos" class="pr-days-note" style="margin-left:0"></p>
-                        <div class="al-bottom">
-                            <div>
-                                <h4>Municipios con mayor riesgo</h4>
-                                <div id="al-ranking"></div>
-                            </div>
-                            <div>
-                                <div id="al-detalle-vacio" class="pr-series-empty">Haz clic en un municipio del mapa o de la lista para ver el detalle.</div>
-                                <div id="al-detalle" hidden></div>
-                            </div>
-                        </div>
-                        <p class="pr-source">Índices calculados con los <a href="#scripts">modelos agroclimáticos en Python</a> a partir del pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0), en un punto representativo de cada municipio. Cada plaga usa los primeros días del pronóstico (su ventana) y se actualiza todos los días junto con el pronóstico.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Riesgo histórico (mapas de los modelos agroclimáticos) -->
-        <div class="explorer-panel" id="panel-historico" data-modo="historico" role="tabpanel" aria-labelledby="modo-historico" hidden>
-        <div class="explorer-container">
-            <div class="explorer-sidebar">
-                <h3 style="margin:0 0 0.5rem 0; font-size: 1.2rem; color: var(--dark-bg);">Filtros Dinámicos</h3>
-                <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0;">Selecciona las variables para actualizar el mapa interactivo.</p>
-                
-                <div class="filter-group">
-                    <label>Cultivo de Interés</label>
-                    <select id="explorer-crop-select" onchange="updateExplorerPests()">
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label>Plaga / Enfermedad</label>
-                    <select id="explorer-pest-select" onchange="updateExplorerYears()">
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label>Año</label>
-                    <select id="explorer-year-select" onchange="updateExplorerDates()">
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label>Escenario Temporal</label>
-                    <select id="explorer-date-select" onchange="updateExplorerImage()">
-                    </select>
-                </div>
-                
-                <button class="explorer-btn" onclick="updateExplorerImage()">Actualizar Mapa</button>
-            </div>
-            <div class="explorer-main">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 id="explorer-map-title" style="margin: 0; color: var(--dark-bg);">Índice de Vulnerabilidad</h3>
-                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--cat-orange); background: #fff8f1; padding: 4px 10px; border-radius: 4px; border: 1px solid var(--cat-orange);">Riesgo Elevado</span>
-                </div>
-                <img id="explorer-map-img" class="explorer-img" src="figures/data_explorer_map.png" alt="Mapa de calor de riesgo en Bolivia">
-                <p style="font-size: 0.85rem; color: #888; text-align: right; margin-top: 10px; font-style: italic;">* Los datos espaciales son proyecciones del modelo de inteligencia agroclimática.</p>
-            </div>
-        </div>
         </div>
     </section>
 
