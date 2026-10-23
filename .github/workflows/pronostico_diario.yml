@@ -1,0 +1,70 @@
+name: Pronóstico diario 16 días
+
+on:
+  schedule:
+    - cron: "0 10 * * *"     # 10:00 UTC = 06:00 en La Paz (corridas 00z de GFS y ECMWF ya disponibles)
+  workflow_dispatch:          # botón "Run workflow" para correrlo a mano
+    inputs:
+      limite_municipios:
+        description: "Solo los N primeros municipios (vacío = todos). Útil para pruebas."
+        required: false
+        default: ""
+
+permissions:
+  contents: write             # para hacer commit del JSON
+
+concurrency:
+  group: pronostico-diario
+  cancel-in-progress: false
+
+jobs:
+  pronostico:
+    if: github.repository == 'cbarriosperez/Project_Pests_Diseases_Bolivian_Crops'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout (solo lo necesario)
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            Scripts/pronostico
+            data/geo
+            data/pronostico
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: Scripts/pronostico/requirements.txt
+
+      - name: Dependencias
+        run: pip install -r Scripts/pronostico/requirements.txt
+
+      - name: Descargar pronóstico
+        env:
+          OPEN_METEO_API_KEY: ${{ secrets.OPEN_METEO_API_KEY }}   # opcional; vacío = API gratuita
+          LIMITE: ${{ github.event.inputs.limite_municipios }}
+        run: |
+          if [ -n "$LIMITE" ]; then
+            python Scripts/pronostico/pronostico_municipios.py --limite-municipios "$LIMITE"
+          else
+            python Scripts/pronostico/pronostico_municipios.py
+          fi
+
+      - name: Commit y push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/pronostico/pronostico_latest.json
+          if git diff --staged --quiet; then
+            echo "Sin cambios en el pronóstico."
+            exit 0
+          fi
+          git commit -m "Pronóstico $(TZ=America/La_Paz date +%F)"
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin main && git push origin HEAD:main && exit 0
+            echo "Push falló (intento $i), reintentando..."; sleep 15
+          done
+          exit 1
