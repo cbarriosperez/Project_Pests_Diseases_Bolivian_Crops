@@ -30,10 +30,10 @@ RUTA_CULTIVOS = RAIZ / "data" / "geo" / "cultivos_municipios.json"
 RUTA_SALIDA = RAIZ / "data" / "alertas" / "alertas_latest.json"
 
 CATEGORIAS = [
-    {"id": 0, "nombre": "Normal", "color": "#228b22"},
-    {"id": 1, "nombre": "Alerta baja", "color": "#ffd700"},
-    {"id": 2, "nombre": "Alerta media", "color": "#ffa500"},
-    {"id": 3, "nombre": "Alerta alta", "color": "#cd0000"},
+    {"id": 0, "nombre": "Normal", "color": "#64a844"},
+    {"id": 1, "nombre": "Alerta baja", "color": "#fcd333"},
+    {"id": 2, "nombre": "Alerta media", "color": "#e88d2b"},
+    {"id": 3, "nombre": "Alerta alta", "color": "#c4161b"},
 ]   # -1 = sin dato (modelo sin horizonte suficiente o dato faltante)
 
 
