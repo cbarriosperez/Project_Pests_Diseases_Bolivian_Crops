@@ -22,13 +22,16 @@
     // Variables agregadas de la ventana y la condición que usa cada una
     const VARIABLES = {
         t_media_periodo:     { nombre: 'T media del periodo', unidad: '°C', dec: 1 },
+        tmax_media_periodo:  { nombre: 'Tmax media del periodo', unidad: '°C', dec: 1 },
+        tmin_media_periodo:  { nombre: 'Tmin media del periodo', unidad: '°C', dec: 1 },
         precip_acum_periodo: { nombre: 'Precipitación acumulada', unidad: 'mm', dec: 1 },
         hr_media_periodo:    { nombre: 'Humedad relativa media', unidad: '%', dec: 0 },
         dias_lluvia_periodo: { nombre: 'Días con lluvia (> 1 mm)', unidad: 'días', dec: 0 },
         dias_secos_periodo:  { nombre: 'Racha seca al final del periodo', unidad: 'días', dec: 0 },
     };
     const VAR_DE_CONDICION = {
-        cond_t: 't_media_periodo', cond_precip: 'precip_acum_periodo', cond_hr: 'hr_media_periodo',
+        cond_t: 't_media_periodo', cond_tmax: 'tmax_media_periodo', cond_tmin: 'tmin_media_periodo',
+        cond_precip: 'precip_acum_periodo', cond_hr: 'hr_media_periodo',
         cond_lluvia: 'dias_lluvia_periodo', cond_secos: 'dias_secos_periodo',
     };
 

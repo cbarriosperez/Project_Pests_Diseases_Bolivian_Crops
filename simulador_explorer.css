@@ -1,0 +1,129 @@
+/* ==========================================================================
+   Explorador de Datos — Simulador de riesgo para plagas y enfermedades nuevas
+   Reutiliza las clases pr-* (pronostico_explorer.css) y al-* (alertas_explorer.css)
+   ========================================================================== */
+
+#panel-simulador .explorer-main { min-width: 0; }
+
+#panel-simulador input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+.sm-range { width: 100%; accent-color: #e88d2b; }
+.sm-range-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-light); }
+.sm-range-row output { font-weight: 600; color: var(--dark-bg); }
+
+.sm-acciones { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.75rem; }
+.sm-acciones .pr-link-btn { text-align: left; }
+.sm-btn-principal {
+    font: inherit; font-size: 0.85rem; font-weight: 600;
+    background: var(--dark-bg); color: #ffffff;
+    border: none; border-radius: 4px;
+    padding: 0.55rem 0.75rem; cursor: pointer; text-align: center;
+}
+.sm-btn-principal:hover { background: #34424f; }
+
+.sm-aviso {
+    font-size: 0.8rem; line-height: 1.4;
+    background: #eef7e9; border: 1px solid #c9e2bb; color: #2f5a1c;
+    border-radius: 4px; padding: 0.5rem 0.65rem; margin-top: 0.5rem;
+}
+
+/* --- Bloque de configuración ------------------------------------------------------ */
+.sm-config {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem 1.1rem 1.1rem;
+    margin-bottom: 1.25rem;
+}
+.sm-config-head h3 { margin: 0; font-size: 1.05rem; color: var(--dark-bg); }
+.sm-config-head p { margin: 0.2rem 0 0.8rem; font-size: 0.85rem; color: var(--text-light); }
+
+.sm-vars {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 0.75rem;
+}
+.sm-var {
+    display: flex; flex-direction: column; gap: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.7rem 0.8rem 0.6rem;
+    background: #fafbfc;
+    transition: border-color 0.15s, background 0.15s;
+}
+.sm-var.is-on { background: #ffffff; border-color: #e88d2b; box-shadow: inset 3px 0 0 #e88d2b; }
+.sm-var-head { display: flex; align-items: flex-start; gap: 0.55rem; cursor: pointer; }
+.sm-var-head input { margin-top: 0.2rem; width: 16px; height: 16px; accent-color: #e88d2b; flex: none; }
+.sm-var-tit { flex: 1; display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+.sm-var-name { font-weight: 600; font-size: 0.9rem; color: var(--dark-bg); }
+.sm-var-help { font-size: 0.74rem; color: var(--text-light); }
+.sm-var-unit { font-size: 0.75rem; color: var(--text-light); flex: none; }
+.sm-var:not(.is-on) .sm-var-name { color: #5b6672; }
+
+.sm-var-body { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.4rem 0.6rem; }
+.sm-umbral { display: flex; align-items: center; gap: 0.35rem; }
+.sm-op, .sm-num {
+    font: inherit; font-size: 0.85rem;
+    border: 1px solid var(--border-color); border-radius: 4px;
+    padding: 0.3rem 0.35rem; background: #ffffff;
+}
+.sm-op { width: 4.6rem; }
+.sm-num { width: 4.4rem; font-variant-numeric: tabular-nums; }
+.sm-y { font-size: 0.8rem; color: var(--text-light); }
+.sm-op:disabled, .sm-num:disabled { background: #f1f3f5; color: #9aa4ae; }
+
+.sm-peso { display: flex; align-items: center; gap: 0.2rem; }
+.sm-peso-lbl { font-size: 0.75rem; color: var(--text-light); margin-right: 0.15rem; }
+.sm-peso-btn {
+    font: inherit; font-size: 0.8rem; font-weight: 600;
+    width: 1.75rem; height: 1.75rem;
+    border: 1px solid var(--border-color); border-radius: 4px;
+    background: #ffffff; color: var(--dark-bg); cursor: pointer;
+}
+.sm-peso-btn.is-sel { background: var(--dark-bg); border-color: var(--dark-bg); color: #ffffff; }
+.sm-peso-btn:disabled { cursor: default; opacity: 0.45; }
+
+.sm-hist svg { display: block; width: 100%; height: 48px; }
+.sm-hist-ejes { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-light); font-variant-numeric: tabular-nums; }
+.sm-var-stat { margin: 0; font-size: 0.75rem; color: var(--text-light); line-height: 1.35; }
+.sm-var-stat b { color: #b45f12; }
+
+.sm-formula {
+    margin-top: 0.9rem;
+    border-top: 1px solid #eef1f5;
+    padding-top: 0.75rem;
+    font-size: 0.85rem;
+}
+.sm-formula-txt { margin: 0 0 0.4rem; line-height: 1.45; }
+.sm-formula-vacia { margin: 0; color: #b45f12; font-weight: 600; }
+.sm-formula-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.sm-formula-list li {
+    display: flex; align-items: center; gap: 0.4rem;
+    background: #fbf0ea; border: 1px solid #f0d6c4; border-radius: 999px;
+    padding: 0.15rem 0.3rem 0.15rem 0.65rem; font-size: 0.8rem;
+}
+.sm-formula-w {
+    background: #ffffff; border-radius: 999px; padding: 0 0.45rem;
+    font-weight: 600; font-variant-numeric: tabular-nums; color: #b45f12;
+}
+
+.sm-fila-off td { color: #9aa4ae; }
+
+.sm-disclaimer {
+    font-size: 0.8rem; line-height: 1.45;
+    background: #fff8e6; border: 1px solid #f3dfa6; color: #6b5413;
+    border-radius: 4px; padding: 0.6rem 0.8rem; margin-top: 1.25rem;
+}
+
+@media (max-width: 640px) {
+    .sm-vars { grid-template-columns: 1fr; }
+}

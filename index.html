@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
     <link rel="stylesheet" href="pronostico_explorer.css">
     <link rel="stylesheet" href="alertas_explorer.css">
+    <link rel="stylesheet" href="simulador_explorer.css">
     <style>
         :root {
             /* Climate Action Tracker Color Palette */
@@ -1156,7 +1157,7 @@
 
     <section id="explorar">
         <h2 class="section-title">Explorador de Datos</h2>
-        <p style="font-size: 1.1rem; max-width: 800px;">Consulta el clima de los próximos días, las alertas de plagas y enfermedades que se derivan de él y el riesgo observado en años anteriores, por municipio y cultivo.</p>
+        <p style="font-size: 1.1rem; max-width: 800px;">Consulta el clima de los próximos días, las alertas de plagas y enfermedades que se derivan de él y el riesgo observado en años anteriores, por municipio y cultivo. Con el simulador puedes probar umbrales para plagas y enfermedades nuevas.</p>
 
         <div class="explorer-modes" role="tablist" aria-label="Tipo de información">
             <button type="button" class="explorer-mode-btn" role="tab" id="modo-pronostico" data-modo="pronostico" aria-controls="panel-pronostico" aria-selected="true">
@@ -1175,6 +1176,12 @@
                 <span class="explorer-mode-icon" aria-hidden="true">🗺️</span>
                 <span class="explorer-mode-title">Riesgo histórico</span>
                 <span class="explorer-mode-desc" id="modo-historico-desc">Mapas del índice de riesgo calculado con el clima observado en años anteriores.</span>
+            </button>
+            <button type="button" class="explorer-mode-btn" role="tab" id="modo-simulador" data-modo="simulador" aria-controls="panel-simulador" aria-selected="false">
+                <span class="explorer-mode-icon" aria-hidden="true">🧪</span>
+                <span class="explorer-mode-title">Simulador de riesgo</span>
+                <span class="explorer-mode-desc">Define los umbrales de una plaga o enfermedad nueva y mira qué municipios estarían en riesgo con el pronóstico.</span>
+                <span class="explorer-mode-badge">Herramienta de exploración</span>
             </button>
         </div>
 
@@ -1281,6 +1288,85 @@
                             </div>
                         </div>
                         <p class="pr-source">Índices calculados con los <a href="#scripts">modelos agroclimáticos en Python</a> a partir del pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0), en un punto representativo de cada municipio. Cada plaga usa los primeros días del pronóstico (su ventana) y se actualiza todos los días junto con el pronóstico.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulador de riesgo: umbrales definidos por el usuario sobre el pronóstico (se calcula en el navegador) -->
+        <div class="explorer-panel" id="panel-simulador" data-modo="simulador" role="tabpanel" aria-labelledby="modo-simulador" hidden>
+            <div class="explorer-container">
+                <div id="sm-cargando" class="pr-loading">Cargando el pronóstico…</div>
+                <div id="sm-contenido" class="pr-layout" hidden>
+                    <div class="explorer-sidebar">
+                        <div class="filter-group">
+                            <label for="sm-nombre">Plaga o enfermedad</label>
+                            <input type="text" id="sm-nombre" maxlength="80" placeholder="Ej.: Tizón tardío" autocomplete="off">
+                        </div>
+                        <div class="filter-group">
+                            <label for="sm-cultivo">Cultivo</label>
+                            <select id="sm-cultivo"></select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="sm-plantilla">Partir de</label>
+                            <select id="sm-plantilla"></select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="sm-ventana">Ventana de evaluación</label>
+                            <input type="range" id="sm-ventana" class="sm-range" step="1">
+                            <div class="sm-range-row"><span>desde hoy</span><output id="sm-ventana-txt" for="sm-ventana"></output></div>
+                        </div>
+                        <div class="filter-group">
+                            <label for="sm-modelo">Modelo climático</label>
+                            <select id="sm-modelo"></select>
+                        </div>
+                        <p class="pr-help">Activa las variables que quieres incluir, ajusta sus umbrales y pesos, y el mapa se recalcula al instante.</p>
+                        <div class="sm-acciones">
+                            <button type="button" class="sm-btn-principal" id="sm-enlace">Copiar enlace a esta simulación</button>
+                            <button type="button" class="pr-link-btn" id="sm-csv">Descargar resultados (CSV)</button>
+                            <button type="button" class="pr-link-btn" id="sm-py">Exportar como script Python</button>
+                            <button type="button" class="pr-link-btn" id="sm-json">Guardar configuración (JSON)</button>
+                            <button type="button" class="pr-link-btn" id="sm-json-abrir">Abrir configuración guardada</button>
+                            <input type="file" id="sm-json-archivo" accept=".json,application/json" hidden>
+                            <button type="button" class="pr-link-btn" id="sm-reiniciar">Empezar de nuevo</button>
+                        </div>
+                        <div id="sm-aviso" class="sm-aviso" role="status" hidden></div>
+                        <div class="pr-run">
+                            <div id="sm-corrida"></div>
+                        </div>
+                    </div>
+                    <div class="explorer-main">
+                        <div id="sm-alerta" class="pr-alert" role="status" hidden></div>
+                        <div class="sm-config">
+                            <div class="sm-config-head">
+                                <h3>Condiciones climáticas favorables</h3>
+                                <p>Marca las variables que intervienen en el cálculo. El gráfico de cada una muestra cómo se distribuye en los municipios; en naranja, los que cumplen la condición.</p>
+                            </div>
+                            <div id="sm-vars" class="sm-vars"></div>
+                            <div id="sm-formula" class="sm-formula" aria-live="polite"></div>
+                        </div>
+                        <div class="pr-head">
+                            <div>
+                                <h3 id="sm-titulo"></h3>
+                                <p id="sm-subtitulo"></p>
+                            </div>
+                            <div id="sm-fecha" class="pr-date" aria-live="polite"></div>
+                        </div>
+                        <div id="sm-resumen" class="al-resumen" aria-live="polite"></div>
+                        <div id="sm-mapa" class="pr-map" role="region" aria-label="Mapa del riesgo simulado por municipio"></div>
+                        <div id="sm-leyenda" class="pr-legend"></div>
+                        <p id="sm-nota-modelos" class="pr-days-note" style="margin-left:0"></p>
+                        <div class="al-bottom">
+                            <div>
+                                <h4>Municipios con mayor riesgo</h4>
+                                <div id="sm-ranking"></div>
+                            </div>
+                            <div>
+                                <div id="sm-detalle-vacio" class="pr-series-empty">Haz clic en un municipio del mapa o de la lista para ver sus valores y qué condiciones cumple.</div>
+                                <div id="sm-detalle" hidden></div>
+                            </div>
+                        </div>
+                        <p class="sm-disclaimer"><strong>Herramienta de exploración.</strong> Los resultados dependen de los umbrales que defina el usuario y muestran dónde el pronóstico sería favorable para la plaga o enfermedad; no son alertas oficiales del SAT ni confirman su presencia. Se calculan con la misma lógica de los modelos del SAT, sobre el pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> en un punto representativo de cada municipio.</p>
                     </div>
                 </div>
             </div>
@@ -2239,5 +2325,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
     <script src="pronostico_explorer.js"></script>
     <script src="alertas_explorer.js"></script>
+    <script src="simulador_explorer.js"></script>
 </body>
 </html>
