@@ -60,7 +60,7 @@
     const PLANTILLAS = {
         AJO: { cultivo: 'AJO', nombre: 'Fusariosis (pudrición basal)', ventana: 15, conds: { t: c('>=', 25, 1), secos: c('>=', 10, 1), precip: c('<', 20, 1) } },
         BANANO: { cultivo: 'BANANO', nombre: 'Sigatoka negra', ventana: 10, conds: { t: c('entre', 25, 1, 28), hr: c('>=', 90, 2), precip: c('>=', 50, 1) } },
-        CAFE: { cultivo: 'CAFE', nombre: 'Broca del café', ventana: 14, conds: { t: c('entre', 20, 2, 30), precip: c('entre', 14, 1, 37.33) } },
+        CAFE: { cultivo: 'CAFE', nombre: 'Broca del café', ventana: 14, conds: { t: c('entre', 20, 2, 30), precip: c('entre', 14, 1, 80 * 14 / 30) } },
         CEBOLLA: { cultivo: 'CEBOLLA', nombre: 'Mildiu (polvillo negro)', ventana: 10, conds: { t: c('entre', 6, 1, 22), hr: c('>=', 90, 2), lluvia: c('>=', 3, 1) } },
         DURAZNO_ARANUELA: { cultivo: 'DURAZNO', nombre: 'Arañuela roja', ventana: 10, conds: { t: c('>', 25, 2), secos: c('>=', 7, 1), hr: c('<', 50, 1) } },
         DURAZNO_OIDIO: { cultivo: 'DURAZNO', nombre: 'Oídio', ventana: 10, conds: { t: c('entre', 18, 1, 25), hr: c('entre', 50, 1, 70) } },
@@ -143,11 +143,17 @@
     // ======================================================================== interfaz
     const st = { nombre: '', cultivo: 'PAPA', ventana: 10, modelo: MULTI, plantilla: '', conds: {}, gid: null };
     let P = null, MUN = null, DEP = null, CULT = null;
+    let BASE = null, COM = null;   // datos municipales y de comunidades (comunidades_datos.js)
     let propsDe = {}, filaDe = {};
-    let gids = [];                 // municipios evaluados
+    let gids = [];                 // municipios (o comunidades) evaluados
+    let posDe = new Map();         // gid -> posición en gids
     let agg = {};                  // modelo -> [vars por municipio] (cache por cultivo y ventana)
     let res = {};                  // modelo -> [resultado por municipio]
-    let mapa = null, capa = null, iniciado = false;
+    let mapa = null, capa = null, capaBordes = null, lienzo = null, iniciado = false;
+    let nivelActual = 'municipios';
+    const esCom = () => nivelActual === 'comunidades';
+    const unidades = (n) => (esCom() ? (n === 1 ? 'comunidad' : 'comunidades') : (n === 1 ? 'municipio' : 'municipios'));
+    const lugarDe = (g) => (esCom() ? SATComunidades.lugar(propsDe[g]) : (propsDe[g] ? propsDe[g].departamento : ''));
 
     const $ = (id) => document.getElementById(id);
     const el = (tag, cls, texto) => {
@@ -204,8 +210,8 @@
             $('sm-cargando').textContent = `No se pudo cargar el pronóstico: ${err.message}. Recarga la página en unos minutos.`;
             return;
         }
-        MUN.features.forEach((f) => { propsDe[f.properties.GID_3] = f.properties; });
-        P.municipios.forEach((g, i) => { filaDe[g] = i; });
+        BASE = { P, MUN, CULT };
+        indexar();
 
         $('sm-cargando').hidden = true;
         $('sm-contenido').hidden = false;
@@ -215,6 +221,59 @@
         mostrarCorrida();
         crearMapa();
         recalcularTodo({ recrearCapa: true });
+        document.addEventListener('sat:nivel', (ev) => aplicarNivel(ev.detail.nivel));
+        if (window.SATComunidades && SATComunidades.nivel !== nivelActual) aplicarNivel(SATComunidades.nivel);
+    }
+
+    function indexar() {
+        propsDe = {};
+        filaDe = {};
+        MUN.features.forEach((f) => { propsDe[f.properties.GID_3] = f.properties; });
+        P.municipios.forEach((g, i) => { filaDe[g] = i; });
+    }
+
+    // ---------------------------------------------------------------- nivel municipio / comunidad
+    async function aplicarNivel(nivel) {
+        if (nivel === nivelActual || !BASE) return;
+        const nota = $('sm-nivel-nota');
+        if (nivel === 'comunidades') {
+            nota.hidden = false;
+            nota.textContent = 'Cargando las comunidades…';
+            try {
+                COM = await SATComunidades.cargar(BASE.MUN, BASE.CULT);
+            } catch (err) {
+                nota.textContent = `No se pudo cargar el nivel de comunidades: ${err.message}.`;
+                SATComunidades.cambiarNivel('municipios');
+                return;
+            }
+            if (SATComunidades.nivel !== 'comunidades') return;
+            ({ P, MUN, CULT } = COM);
+        } else {
+            ({ P, MUN, CULT } = BASE);
+        }
+        nivelActual = nivel;
+        st.gid = null;
+        indexar();
+        nota.hidden = !esCom();
+        if (esCom()) {
+            nota.textContent = 'Cada comunidad usa el pronóstico de su celda ' +
+                `(${String(COM.info.resolucion).replace('.', ',')}°)` +
+                (COM.info.con_altitud ? ', con la temperatura ajustada a su altitud.' : '.');
+        }
+        etiquetarCultivos();
+        $('sm-ventana').max = Math.min(VENTANA_MAX, P.fechas.length);
+        if (st.ventana > P.fechas.length) st.ventana = P.fechas.length;
+        mostrarCorrida();
+        recalcularTodo({ recrearCapa: true });
+    }
+
+    function etiquetarCultivos() {
+        [...$('sm-cultivo').options].forEach((o) => {
+            const n = o.value === TODOS ? P.municipios.length : Object.keys(CULT[o.value].municipios).length;
+            o.textContent = o.value === TODOS
+                ? `Todos ${esCom() ? 'las comunidades de los municipios productores' : 'los municipios productores'} (${num(n, 0)})`
+                : `${etiquetaCultivo(o.value)} (${num(n, 0)} ${unidades(n)})`;
+        });
     }
 
     // ---------------------------------------------------------------- configuración
@@ -299,8 +358,9 @@
         const sc = $('sm-cultivo');
         sc.innerHTML = '';
         Object.keys(CULT).sort((a, b) => etiquetaCultivo(a).localeCompare(etiquetaCultivo(b), 'es'))
-            .forEach((k) => sc.add(new Option(`${etiquetaCultivo(k)} (${Object.keys(CULT[k].municipios).length} municipios)`, k)));
-        sc.add(new Option(`Todos los municipios productores (${P.municipios.length})`, TODOS));
+            .forEach((k) => sc.add(new Option(etiquetaCultivo(k), k)));
+        sc.add(new Option('Todos', TODOS));
+        etiquetarCultivos();
 
         const sp = $('sm-plantilla');
         sp.innerHTML = '';
@@ -465,7 +525,7 @@
         vals.forEach((v) => { if (cond.on && cumple(v, cond) === 1) si[bin(v)] += 1; else no[bin(v)] += 1; });
         const maxN = Math.max(...si.map((s, i) => s + no[i]));
         const W = 280, H = 52, bw = W / nb;
-        let svg = `<svg viewBox="0 0 ${W} ${H + 2}" preserveAspectRatio="none" role="img" aria-label="Distribución de ${x.nombre} en los municipios">`;
+        let svg = `<svg viewBox="0 0 ${W} ${H + 2}" preserveAspectRatio="none" role="img" aria-label="Distribución de ${x.nombre} en ${esCom() ? 'las comunidades' : 'los municipios'}">`;
         for (let i = 0; i < nb; i++) {
             const hs = (si[i] / maxN) * H, hn = (no[i] / maxN) * H;
             if (hn) svg += `<rect x="${i * bw + 1}" y="${H - hn - hs}" width="${bw - 2}" height="${hn}" fill="${cond.on ? '#cfd6de' : '#dfe4ea'}"/>`;
@@ -491,7 +551,7 @@
         if (cond.on) {
             const nSi = si.reduce((s, v) => s + v, 0);
             stat.innerHTML = '';
-            stat.append(el('b', '', `Se cumple en ${nSi} de ${n}`), ` municipios · ${textoCond(x.k, cond)}`);
+            stat.append(el('b', '', `Se cumple en ${num(nSi, 0)} de ${num(n, 0)}`), ` ${unidades(n)} · ${textoCond(x.k, cond)}`);
         } else {
             stat.textContent = `No se usa en el cálculo · rango ${num(Math.min(...vals), x.dec)} a ${num(Math.max(...vals), x.dec)} ${x.unidad}`;
         }
@@ -506,6 +566,7 @@
         gids = st.cultivo === TODOS
             ? P.municipios.slice()
             : Object.keys(CULT[st.cultivo].municipios).filter((g) => filaDe[g] !== undefined);
+        posDe = new Map(gids.map((g, i) => [g, i]));
         const D = P.datos, n = st.ventana;
         agg = {};
         P.modelos.forEach((m) => {
@@ -527,7 +588,7 @@
     function recalcularTodo({ recrearCapa: recrear }) {
         agregar();
         poblarModelos();
-        if (st.gid && !gids.includes(st.gid)) st.gid = null;
+        if (st.gid && !posDe.has(st.gid)) st.gid = null;
         if (recrear || !capa) recrearCapa();
         evaluarTodo();
     }
@@ -551,6 +612,9 @@
     // ---------------------------------------------------------------- mapa
     function crearMapa() {
         mapa = L.map('sm-mapa', { zoomSnap: 0.25, scrollWheelZoom: false, attributionControl: false });
+        mapa.createPane('sm-comunidades').style.zIndex = 420;   // canvas de comunidades, sobre el fondo
+        mapa.createPane('sm-bordes').style.zIndex = 440;
+        mapa.getPane('sm-bordes').style.pointerEvents = 'none';
         L.geoJSON(MUN, { interactive: false, style: { color: '#d5dbe2', weight: 0.5, fillColor: '#f1f3f5', fillOpacity: 1 } }).addTo(mapa);
         mapa.createPane('sm-deptos').style.zIndex = 450;
         mapa.createPane('sm-etiquetas').style.zIndex = 460;
@@ -565,7 +629,7 @@
         dibujarLeyenda();
     }
 
-    const pos = (gid) => gids.indexOf(gid);
+    const pos = (gid) => (posDe.has(gid) ? posDe.get(gid) : -1);
     function dato(gid, modelo = st.modelo) {
         const i = pos(gid);
         if (i < 0 || !res[modelo]) return null;
@@ -576,7 +640,9 @@
         const gid = feature.properties.GID_3;
         const d = dato(gid);
         const sel = gid === st.gid;
-        const base = { color: sel ? COLOR_OSCURO : '#6b7785', weight: sel ? 3 : 0.6, fillOpacity: 1 };
+        const base = esCom()
+            ? { color: sel ? COLOR_OSCURO : 'rgba(255,255,255,0.55)', weight: sel ? 2.5 : 0.3, fillOpacity: 1 }
+            : { color: sel ? COLOR_OSCURO : '#6b7785', weight: sel ? 3 : 0.6, fillOpacity: 1 };
         if (!d || d.alerta < 0) return { ...base, fillColor: SIN_DATO, dashArray: '3' };
         return { ...base, fillColor: colorCat(d.alerta), dashArray: null };
     }
@@ -584,7 +650,7 @@
     function tooltip(gid) {
         const d = dato(gid);
         const div = el('div');
-        div.append(el('b', '', nombreMun(gid)), el('br'), propsDe[gid] ? propsDe[gid].departamento : '', el('br'));
+        div.append(el('b', '', nombreMun(gid)), el('br'), lugarDe(gid), el('br'));
         if (!d || d.alerta < 0) div.append(activas().length ? 'Sin dato para este modelo' : 'Activa al menos una variable');
         else div.append(`${nombreCat(d.alerta)} (índice ${idx(d.indice)})`);
         return div;
@@ -592,10 +658,22 @@
 
     function recrearCapa() {
         if (capa) mapa.removeLayer(capa);
-        const set = new Set(gids);
+        if (capaBordes) { mapa.removeLayer(capaBordes); capaBordes = null; }
+        if (esCom()) {
+            const prod = st.cultivo === TODOS
+                ? Object.fromEntries(BASE.P.municipios.map((g) => [g, true]))
+                : (CULT[st.cultivo].municipios_productores || {});
+            capaBordes = L.geoJSON(
+                { type: 'FeatureCollection', features: BASE.MUN.features.filter((f) => prod[f.properties.GID_3]) },
+                { pane: 'sm-bordes', interactive: false, style: { color: '#4b5663', weight: 0.7, fill: false } },
+            ).addTo(mapa);
+        }
+        if (!lienzo) lienzo = L.canvas({ padding: 0.3, tolerance: 2, pane: 'sm-comunidades' });
         capa = L.geoJSON(
-            { type: 'FeatureCollection', features: MUN.features.filter((f) => set.has(f.properties.GID_3)) },
+            { type: 'FeatureCollection', features: MUN.features.filter((f) => posDe.has(f.properties.GID_3)) },
             {
+                pane: esCom() ? 'sm-comunidades' : 'overlayPane',
+                renderer: esCom() ? lienzo : undefined,
                 style: estilo,
                 onEachFeature: (f, c) => {
                     c.bindTooltip(() => tooltip(f.properties.GID_3), { sticky: true, className: 'pr-tooltip' });
@@ -635,8 +713,9 @@
             timeZone: TZ, day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
         }).format(new Date(P.generado_utc));
         $('sm-corrida').innerHTML = '';
-        $('sm-corrida').append('Pronóstico del ', el('strong', '', hora), ' (hora de Bolivia).');
+        $('sm-corrida').append(esCom() ? 'Pronóstico por comunidades del ' : 'Pronóstico del ', el('strong', '', hora), ' (hora de Bolivia).');
         const atraso = Math.round((aFecha(hoyBolivia()) - aFecha(P.fecha_inicio)) / 86400000);
+        $('sm-alerta').hidden = true;
         if (atraso >= 2) {
             $('sm-alerta').textContent = `El simulador usa el pronóstico del ${fmtLargo.format(aFecha(P.fecha_inicio))}, ` +
                 `que no se ha actualizado en ${atraso} días.`;
@@ -647,7 +726,7 @@
     function actualizarEncabezado() {
         const nom = st.nombre.trim() || 'Plaga o enfermedad sin nombre';
         $('sm-titulo').textContent = `${nom} en ${etiquetaCultivo(st.cultivo).toLowerCase()}`;
-        $('sm-subtitulo').textContent = `${gids.length} municipios · ${etiquetaModelo(st.modelo).toLowerCase()} · simulación`;
+        $('sm-subtitulo').textContent = `${num(gids.length, 0)} ${unidades(gids.length)} · ${etiquetaModelo(st.modelo).toLowerCase()} · simulación`;
         const f = $('sm-fecha');
         f.innerHTML = '';
         const n = Math.min(st.ventana, P.fechas.length);
@@ -689,7 +768,7 @@
             const sup = ix.reduce((s, i) => s + ha(i), 0);
             const t = el('div', 'al-tile' + (cat < 0 ? ' al-tile-nd' : ''));
             t.style.setProperty('--c', colorCat(cat));
-            t.append(el('span', 'al-tile-n', String(ix.length)), el('span', 'al-tile-cat', nombreCat(cat)));
+            t.append(el('span', 'al-tile-n', num(ix.length, 0)), el('span', 'al-tile-cat', nombreCat(cat)));
             if (totalHa > 0 && cat >= 0) t.append(el('span', 'al-tile-ha', `${num(100 * sup / totalHa, 0)} % de la superficie`));
             cont.append(t);
         });
@@ -703,7 +782,8 @@
             .filter((x) => x.d && x.d.alerta > 0)
             .sort((a, b) => b.d.indice - a.d.indice || b.ha - a.ha);
         if (!filas.length) {
-            cont.append(el('p', 'al-vacio', activas().length ? 'Ningún municipio en riesgo con estas condiciones.' : 'Activa al menos una variable.'));
+            cont.append(el('p', 'al-vacio', activas().length
+                ? `${esCom() ? 'Ninguna comunidad' : 'Ningún municipio'} en riesgo con estas condiciones.` : 'Activa al menos una variable.'));
             return;
         }
         const ol = el('ol', 'al-rank-list');
@@ -714,7 +794,7 @@
             dot.style.background = colorCat(d.alerta);
             const txt = el('span', 'al-rank-txt');
             txt.append(el('span', 'al-rank-nom', nombreMun(g)),
-                el('span', 'al-rank-meta', `${propsDe[g] ? propsDe[g].departamento : ''}${ha ? ' · ' + num(ha, 0) + ' ha' : ''}`));
+                el('span', 'al-rank-meta', `${lugarDe(g)}${ha ? ' · ' + num(ha, 0) + ' ha' : ''}`));
             b.append(dot, txt, el('span', 'al-rank-idx', idx(d.indice)));
             b.addEventListener('click', () => seleccionar(g));
             const li = el('li');
@@ -722,7 +802,10 @@
             ol.append(li);
         });
         cont.append(ol);
-        if (filas.length > 10) cont.append(el('p', 'al-nota', `y ${filas.length - 10} municipios más en riesgo.`));
+        if (filas.length > 10) {
+            const resto = filas.length - 10;
+            cont.append(el('p', 'al-nota', `y ${num(resto, 0)} ${unidades(resto)} más en riesgo.`));
+        }
     }
 
     function dibujarDetalle() {
@@ -743,6 +826,10 @@
         tit.append(el('h4', '', nombreMun(g)));
         let meta = `${p.departamento || ''}${p.provincia ? ', provincia ' + p.provincia : ''}.`;
         if (info.sup_ha) meta += ` ${num(info.sup_ha, 0)} ha de ${etiquetaCultivo(st.cultivo).toLowerCase()} (censo agropecuario).`;
+        if (esCom()) {
+            meta = `Comunidad del municipio de ${SATComunidades.lugar(p)}` +
+                `${p.poblacion ? ` · ${num(p.poblacion, 0)} habitantes` : ''}. ${SATComunidades.notaPronostico(p, COM.info)}`;
+        }
         tit.append(el('p', 'pr-series-meta', meta));
         const badge = el('span', 'al-badge', d && d.alerta >= 0 ? `${nombreCat(d.alerta)} · índice ${idx(d.indice)}` : 'Sin dato');
         badge.style.setProperty('--c', colorCat(d ? d.alerta : -1));
@@ -824,12 +911,17 @@
         const act = activas();
         const q = (s) => `"${String(s).replace(/"/g, '""')}"`;
         const n = Math.min(st.ventana, P.fechas.length);
-        const filas = [['plaga', 'cultivo', 'GID_3', 'departamento', 'municipio', 'ventana_inicio', 'ventana_fin', 'modelo',
+        const filas = [['plaga', 'cultivo', esCom() ? 'id_comunidad' : 'GID_3', 'departamento', 'municipio',
+            ...(esCom() ? ['comunidad', 'ajuste_temp_c'] : []), 'ventana_inicio', 'ventana_fin', 'modelo',
             ...act.map(([k]) => VAR[k].v), ...act.map(([k]) => `cumple_${k}`), 'indice', 'alerta']];
         gids.forEach((g, i) => {
+            const p = propsDe[g] || {};
+            const lugar = esCom()
+                ? [q(p.departamento), q(p.municipio), q(p.comunidad), +p.ajuste_temp.toFixed(3)]
+                : [q(p.departamento || ''), q(nombreMun(g))];
             P.modelos.forEach((m) => {
                 const r = res[m][i], v = agg[m][i];
-                filas.push([q(st.nombre), q(etiquetaCultivo(st.cultivo)), g, q(propsDe[g] ? propsDe[g].departamento : ''), q(nombreMun(g)),
+                filas.push([q(st.nombre), q(etiquetaCultivo(st.cultivo)), g, ...lugar,
                     P.fechas[0], P.fechas[n - 1], q(m),
                     ...act.map(([k]) => (nulo(v[VAR[k].v]) ? '' : +v[VAR[k].v].toFixed(2))),
                     ...act.map(([k]) => (r.conds[k] ?? '')),
@@ -838,7 +930,7 @@
         });
         const cab = `# Simulación: ${act.map(([k, c]) => `${textoCond(k, c)} (peso ${c.peso})`).join('; ')}\n`;
         descargar('﻿' + cab + filas.map((r) => r.join(',')).join('\n'),
-            `simulacion_${nombreBase().toLowerCase()}_${P.fecha_inicio}.csv`, 'text/csv;charset=utf-8');
+            `simulacion_${esCom() ? 'comunidades_' : ''}${nombreBase().toLowerCase()}_${P.fecha_inicio}.csv`, 'text/csv;charset=utf-8');
     }
 
     function descargarJSON() {

@@ -1196,6 +1196,14 @@
                             <select id="pr-cultivo"></select>
                         </div>
                         <div class="filter-group">
+                            <label for="pr-nivel">Ver resultados por</label>
+                            <select id="pr-nivel" data-sat-nivel>
+                                <option value="municipios">Municipio</option>
+                                <option value="comunidades">Comunidad</option>
+                            </select>
+                            <p id="pr-nivel-nota" class="pr-nivel-nota" hidden></p>
+                        </div>
+                        <div class="filter-group">
                             <label for="pr-variable">Variable</label>
                             <select id="pr-variable"></select>
                         </div>
@@ -1203,7 +1211,7 @@
                             <label for="pr-modelo">Modelo</label>
                             <select id="pr-modelo"></select>
                         </div>
-                        <p class="pr-help">Haz clic en un municipio para ver su pronóstico día a día en todos los modelos.</p>
+                        <p class="pr-help" id="pr-ayuda">Haz clic en un municipio para ver su pronóstico día a día en todos los modelos.</p>
                         <div class="pr-run">
                             <div id="pr-corrida"></div>
                             <button type="button" class="pr-link-btn" id="pr-csv">Descargar datos del cultivo (CSV)</button>
@@ -1226,14 +1234,14 @@
                         </div>
                         <p id="pr-dias-nota" class="pr-days-note"></p>
                         <div class="pr-series">
-                            <div id="pr-serie-vacia" class="pr-series-empty">Haz clic en un municipio del mapa para comparar su pronóstico en todos los modelos.</div>
+                            <div id="pr-serie-vacia" class="pr-series-empty" data-com="Acerca el mapa y haz clic en una comunidad para comparar su pronóstico en todos los modelos.">Haz clic en un municipio del mapa para comparar su pronóstico en todos los modelos.</div>
                             <div id="pr-serie-contenido" hidden>
                                 <h4 id="pr-serie-titulo"></h4>
                                 <p id="pr-serie-meta" class="pr-series-meta"></p>
                                 <div class="pr-chart-wrap"><canvas id="pr-grafico"></canvas></div>
                             </div>
                         </div>
-                        <p class="pr-source">Pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0), consultado en un punto representativo dentro de cada municipio; no es un promedio de toda su superficie. Se actualiza todos los días a las 06:00, hora de Bolivia.</p>
+                        <p class="pr-source" data-com="Pronóstico diario de &lt;a href=&quot;https://open-meteo.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Open-Meteo&lt;/a&gt; (CC BY 4.0) por celdas de la grilla; cada comunidad toma el valor de su celda, con la temperatura ajustada a su altitud. Comunidades del Censo 2024 de los municipios productores. Se actualiza todos los días, después del pronóstico municipal.">Pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0), consultado en un punto representativo dentro de cada municipio; no es un promedio de toda su superficie. Se actualiza todos los días a las 06:00, hora de Bolivia.</p>
                     </div>
                 </div>
             </div>
@@ -1250,6 +1258,14 @@
                             <select id="al-cultivo"></select>
                         </div>
                         <div class="filter-group">
+                            <label for="al-nivel">Ver resultados por</label>
+                            <select id="al-nivel" data-sat-nivel>
+                                <option value="municipios">Municipio</option>
+                                <option value="comunidades">Comunidad</option>
+                            </select>
+                            <p id="al-nivel-nota" class="pr-nivel-nota" hidden></p>
+                        </div>
+                        <div class="filter-group">
                             <label for="al-plaga">Plaga / enfermedad</label>
                             <select id="al-plaga"></select>
                         </div>
@@ -1257,7 +1273,7 @@
                             <label for="al-modelo">Modelo climático</label>
                             <select id="al-modelo"></select>
                         </div>
-                        <p class="pr-help">Haz clic en un municipio para ver qué condiciones se cumplen y cómo lo ve cada modelo.</p>
+                        <p class="pr-help" id="al-ayuda">Haz clic en un municipio para ver qué condiciones se cumplen y cómo lo ve cada modelo.</p>
                         <div id="al-formula" class="al-formula"></div>
                         <div class="pr-run">
                             <div id="al-corrida"></div>
@@ -1279,15 +1295,15 @@
                         <p id="al-nota-modelos" class="pr-days-note" style="margin-left:0"></p>
                         <div class="al-bottom">
                             <div>
-                                <h4>Municipios con mayor riesgo</h4>
+                                <h4 data-com="Comunidades con mayor riesgo">Municipios con mayor riesgo</h4>
                                 <div id="al-ranking"></div>
                             </div>
                             <div>
-                                <div id="al-detalle-vacio" class="pr-series-empty">Haz clic en un municipio del mapa o de la lista para ver el detalle.</div>
+                                <div id="al-detalle-vacio" class="pr-series-empty" data-com="Haz clic en una comunidad del mapa o de la lista para ver el detalle.">Haz clic en un municipio del mapa o de la lista para ver el detalle.</div>
                                 <div id="al-detalle" hidden></div>
                             </div>
                         </div>
-                        <p class="pr-source">Índices calculados con los <a href="#scripts">modelos agroclimáticos en Python</a> a partir del pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0), en un punto representativo de cada municipio. Cada plaga usa los primeros días del pronóstico (su ventana) y se actualiza todos los días junto con el pronóstico.</p>
+                        <p class="pr-source" data-com="Índices calculados en el navegador con la misma lógica de los &lt;a href=&quot;#scripts&quot;&gt;modelos agroclimáticos en Python&lt;/a&gt;, a partir del pronóstico diario de &lt;a href=&quot;https://open-meteo.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Open-Meteo&lt;/a&gt; (CC BY 4.0) de la celda de cada comunidad, con la temperatura ajustada a su altitud. Cada plaga usa los primeros días del pronóstico (su ventana).">Índices calculados con los <a href="#scripts">modelos agroclimáticos en Python</a> a partir del pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0), en un punto representativo de cada municipio. Cada plaga usa los primeros días del pronóstico (su ventana) y se actualiza todos los días junto con el pronóstico.</p>
                     </div>
                 </div>
             </div>
@@ -1306,6 +1322,14 @@
                         <div class="filter-group">
                             <label for="sm-cultivo">Cultivo</label>
                             <select id="sm-cultivo"></select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="sm-nivel">Ver resultados por</label>
+                            <select id="sm-nivel" data-sat-nivel>
+                                <option value="municipios">Municipio</option>
+                                <option value="comunidades">Comunidad</option>
+                            </select>
+                            <p id="sm-nivel-nota" class="pr-nivel-nota" hidden></p>
                         </div>
                         <div class="filter-group">
                             <label for="sm-plantilla">Partir de</label>
@@ -1358,15 +1382,15 @@
                         <p id="sm-nota-modelos" class="pr-days-note" style="margin-left:0"></p>
                         <div class="al-bottom">
                             <div>
-                                <h4>Municipios con mayor riesgo</h4>
+                                <h4 data-com="Comunidades con mayor riesgo">Municipios con mayor riesgo</h4>
                                 <div id="sm-ranking"></div>
                             </div>
                             <div>
-                                <div id="sm-detalle-vacio" class="pr-series-empty">Haz clic en un municipio del mapa o de la lista para ver sus valores y qué condiciones cumple.</div>
+                                <div id="sm-detalle-vacio" class="pr-series-empty" data-com="Haz clic en una comunidad del mapa o de la lista para ver sus valores y qué condiciones cumple.">Haz clic en un municipio del mapa o de la lista para ver sus valores y qué condiciones cumple.</div>
                                 <div id="sm-detalle" hidden></div>
                             </div>
                         </div>
-                        <p class="sm-disclaimer"><strong>Herramienta de exploración.</strong> Los resultados dependen de los umbrales que defina el usuario y muestran dónde el pronóstico sería favorable para la plaga o enfermedad; no son alertas oficiales del SAT ni confirman su presencia. Se calculan con la misma lógica de los modelos del SAT, sobre el pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> en un punto representativo de cada municipio.</p>
+                        <p class="sm-disclaimer" data-com="&lt;strong&gt;Herramienta de exploración.&lt;/strong&gt; Los resultados dependen de los umbrales que defina el usuario y muestran dónde el pronóstico sería favorable para la plaga o enfermedad; no son alertas oficiales del SAT ni confirman su presencia. Se calculan con la misma lógica de los modelos del SAT, sobre el pronóstico diario de &lt;a href=&quot;https://open-meteo.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Open-Meteo&lt;/a&gt; de la celda de cada comunidad, con la temperatura ajustada a su altitud."><strong>Herramienta de exploración.</strong> Los resultados dependen de los umbrales que defina el usuario y muestran dónde el pronóstico sería favorable para la plaga o enfermedad; no son alertas oficiales del SAT ni confirman su presencia. Se calculan con la misma lógica de los modelos del SAT, sobre el pronóstico diario de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> en un punto representativo de cada municipio.</p>
                     </div>
                 </div>
             </div>
@@ -2323,6 +2347,7 @@
     <script src="explorer_data.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <script src="comunidades_datos.js"></script>
     <script src="pronostico_explorer.js"></script>
     <script src="alertas_explorer.js"></script>
     <script src="simulador_explorer.js"></script>

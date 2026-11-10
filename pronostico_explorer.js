@@ -3,6 +3,8 @@
    Datos: data/pronostico/pronostico_latest.json (actualizado a diario por
    .github/workflows/pronostico_diario.yml) + geometría en data/geo/.
    Requiere Leaflet 1.9 y Chart.js 4 (cargados en index.html).
+   Nivel «Comunidad»: comunidades_datos.js (window.SATComunidades) entrega el
+   pronóstico, la geometría y los cultivos con el mismo formato, una fila por comunidad.
    ========================================================================== */
 (function () {
     'use strict';
@@ -39,11 +41,14 @@
         },
     };
 
-    const st = { cultivo: null, variable: 'precipitation_sum', modelo: MULTI, dia: 0, gid: null, timer: null };
+    const st = { cultivo: null, variable: 'precipitation_sum', modelo: MULTI, dia: 0, gid: null, timer: null, nivel: 'municipios' };
     let D = null, MUN = null, DEP = null, CULT = null;
+    let BASE = null, COM = null;            // datos municipales y de comunidades
     let filaDe = {}, propsDe = {};
-    let mapa = null, capaCultivo = null, grafico = null;
+    let mapa = null, capaCultivo = null, capaBordes = null, grafico = null, lienzo = null;
     let iniciado = false;
+    const esCom = () => st.nivel === 'comunidades';
+    const unidades = (n) => (esCom() ? (n === 1 ? 'comunidad' : 'comunidades') : (n === 1 ? 'municipio' : 'municipios'));
 
     const $ = (id) => document.getElementById(id);
     const num = (v, dec = 1) => v.toLocaleString('es-BO', { maximumFractionDigits: dec, minimumFractionDigits: 0 });
@@ -106,8 +111,8 @@
                 `No se pudo cargar el pronóstico: ${err.message}. Recarga la página en unos minutos.`;
             return;
         }
-        D.municipios.forEach((g, i) => { filaDe[g] = i; });
-        MUN.features.forEach((f) => { propsDe[f.properties.GID_3] = f.properties; });
+        BASE = { D, MUN, CULT };
+        indexar();
 
         $('pr-cargando').hidden = true;
         cont.hidden = false;
@@ -117,6 +122,56 @@
         crearMapa();
         crearTiraDias();
         actualizarTodo({ recrearCapa: true });
+        if (window.SATComunidades && SATComunidades.nivel !== st.nivel) aplicarNivel(SATComunidades.nivel);
+    }
+
+    function indexar() {
+        filaDe = {};
+        propsDe = {};
+        D.municipios.forEach((g, i) => { filaDe[g] = i; });
+        MUN.features.forEach((f) => { propsDe[f.properties.GID_3] = f.properties; });
+    }
+
+    // ---------------------------------------------------------------- nivel municipio / comunidad
+    async function aplicarNivel(nivel) {
+        if (nivel === st.nivel || !BASE) return;
+        const nota = $('pr-nivel-nota');
+        if (nivel === 'comunidades') {
+            nota.hidden = false;
+            nota.textContent = 'Cargando las comunidades…';
+            try {
+                COM = await SATComunidades.cargar(BASE.MUN, BASE.CULT);
+            } catch (err) {
+                nota.textContent = `No se pudo cargar el nivel de comunidades: ${err.message}.`;
+                SATComunidades.cambiarNivel('municipios');
+                return;
+            }
+            if (SATComunidades.nivel !== 'comunidades') return;   // el usuario volvió a municipio mientras cargaba
+            ({ P: D, MUN, CULT } = COM);
+        } else {
+            ({ D, MUN, CULT } = BASE);
+        }
+        st.nivel = nivel;
+        st.gid = null;
+        detener();
+        indexar();
+        dibujarNotaNivel();
+        mostrarCorrida();
+        crearBotonesDias();
+        actualizarTodo({ recrearCapa: true });
+    }
+
+    function dibujarNotaNivel() {
+        const nota = $('pr-nivel-nota');
+        $('pr-ayuda').textContent = esCom()
+            ? 'Acerca el mapa y haz clic en una comunidad para ver su pronóstico día a día en todos los modelos.'
+            : 'Haz clic en un municipio para ver su pronóstico día a día en todos los modelos.';
+        if (!esCom()) { nota.hidden = true; return; }
+        const i = COM.info;
+        nota.hidden = false;
+        nota.textContent = `Comunidades de los municipios productores (Censo 2024). Cada comunidad toma el pronóstico de ` +
+            `su celda de ${String(i.resolucion).replace('.', ',')}° (${num(i.n_celdas, 0)} celdas)` +
+            (i.con_altitud ? ' con la temperatura ajustada a la altitud de la comunidad.' : '.');
     }
 
     // ---------------------------------------------------------------- selectores
@@ -142,6 +197,7 @@
         sv.addEventListener('change', () => { st.variable = sv.value; actualizarTodo(); });
         sm.addEventListener('change', () => { st.modelo = sm.value; actualizarTodo(); });
         $('pr-csv').addEventListener('click', descargarCSV);
+        document.addEventListener('sat:nivel', (ev) => aplicarNivel(ev.detail.nivel));
     }
 
     function mostrarCorrida() {
@@ -151,12 +207,14 @@
         }).format(generado);
         const modelos = D.modelos.filter((m) => m !== MULTI).join(', ');
         let html = `Corrida del <strong>${hora}</strong> (hora de Bolivia).<br>Modelos: ${modelos}.`;
+        if (esCom() && D.usa_ensambles === false) html += '<br>Por comunidad, sin ensambles.';
         const fallidos = Object.keys(D.modelos_fallidos || {});
         if (fallidos.length) html += `<br>Sin datos hoy: ${fallidos.join(', ')}.`;
         $('pr-corrida').innerHTML = html;
 
         const atraso = Math.round((aFecha(hoyBolivia()) - aFecha(D.fecha_inicio)) / 86400000);
         const alerta = $('pr-alerta');
+        alerta.hidden = true;
         if (atraso >= 2) {
             alerta.textContent = `Este pronóstico empieza el ${fmtLargo.format(aFecha(D.fecha_inicio))} y no se ha ` +
                 `actualizado en ${atraso} días. Los primeros días ya pasaron.`;
@@ -177,6 +235,9 @@
             interactive: false,
             style: { color: '#7b8794', weight: 1.2, fill: false },
         });
+        mapa.createPane('comunidades').style.zIndex = 420;   // canvas de comunidades, sobre el fondo
+        mapa.createPane('bordes').style.zIndex = 440;
+        mapa.getPane('bordes').style.pointerEvents = 'none';
         mapa.createPane('deptos').style.zIndex = 450;
         mapa.createPane('etiquetas').style.zIndex = 460;
         mapa.getPane('deptos').style.pointerEvents = 'none';
@@ -196,11 +257,9 @@
         const gid = feature.properties.GID_3;
         const v = valor(gid);
         const seleccionado = gid === st.gid;
-        const base = {
-            color: seleccionado ? COLOR_OSCURO : '#6b7785',
-            weight: seleccionado ? 3 : 0.6,
-            fillOpacity: 1,
-        };
+        const base = esCom()
+            ? { color: seleccionado ? COLOR_OSCURO : 'rgba(255,255,255,0.55)', weight: seleccionado ? 2.5 : 0.3, fillOpacity: 1 }
+            : { color: seleccionado ? COLOR_OSCURO : '#6b7785', weight: seleccionado ? 3 : 0.6, fillOpacity: 1 };
         if (v === null) return { ...base, fillColor: '#e5e7eb', dashArray: '3' };
         return { ...base, fillColor: colorDe(v), dashArray: null };
     }
@@ -214,17 +273,29 @@
         const div = document.createElement('div');
         div.innerHTML = '<b></b><br><span></span><br>';
         div.querySelector('b').textContent = nombres;
-        div.querySelector('span').textContent = p.departamento;
+        div.querySelector('span').textContent = esCom() ? SATComunidades.lugar(p) : p.departamento;
         div.append(`${D.variables[st.variable].nombre}: ${texto}`);
         return div;
     }
 
     function recrearCapaCultivo() {
         if (capaCultivo) mapa.removeLayer(capaCultivo);
+        if (capaBordes) { mapa.removeLayer(capaBordes); capaBordes = null; }
         const gids = municipiosCultivo();
+        if (esCom()) {
+            // límites de los municipios productores encima de las comunidades, como referencia
+            const prod = CULT[st.cultivo].municipios_productores || {};
+            capaBordes = L.geoJSON(
+                { type: 'FeatureCollection', features: BASE.MUN.features.filter((f) => prod[f.properties.GID_3]) },
+                { pane: 'bordes', interactive: false, style: { color: '#4b5663', weight: 0.7, fill: false } },
+            ).addTo(mapa);
+        }
+        if (!lienzo) lienzo = L.canvas({ padding: 0.3, tolerance: 2, pane: 'comunidades' });
         capaCultivo = L.geoJSON(
             { type: 'FeatureCollection', features: MUN.features.filter((f) => gids[f.properties.GID_3]) },
             {
+                pane: esCom() ? 'comunidades' : 'overlayPane',
+                renderer: esCom() ? lienzo : undefined,   // miles de polígonos: canvas en lugar de SVG
                 style: estilo,
                 onEachFeature: (f, capa) => {
                     capa.bindTooltip(() => contenidoTooltip(capa), { sticky: true, className: 'pr-tooltip' });
@@ -269,6 +340,24 @@
     // ---------------------------------------------------------------- tira de días
     function crearTiraDias() {
         const tira = $('pr-dias');
+        crearBotonesDias();
+        tira.addEventListener('keydown', (ev) => {
+            if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return;
+            ev.preventDefault();
+            detener();
+            const disp = disponibilidad();
+            const paso = ev.key === 'ArrowRight' ? 1 : -1;
+            for (let d = st.dia + paso; d >= 0 && d < disp.length; d += paso) {
+                if (disp[d].ok) { irADia(d); tira.children[d].focus(); break; }
+            }
+        });
+        $('pr-play').addEventListener('click', () => (st.timer ? detener() : reproducir()));
+    }
+
+    function crearBotonesDias() {
+        const tira = $('pr-dias');
+        tira.innerHTML = '';
+        if (st.dia >= D.fechas.length) st.dia = 0;
         D.fechas.forEach((iso, d) => {
             const b = document.createElement('button');
             b.type = 'button';
@@ -281,17 +370,6 @@
             b.addEventListener('click', () => { detener(); irADia(d); });
             tira.append(b);
         });
-        tira.addEventListener('keydown', (ev) => {
-            if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return;
-            ev.preventDefault();
-            detener();
-            const disp = disponibilidad();
-            const paso = ev.key === 'ArrowRight' ? 1 : -1;
-            for (let d = st.dia + paso; d >= 0 && d < disp.length; d += paso) {
-                if (disp[d].ok) { irADia(d); tira.children[d].focus(); break; }
-            }
-        });
-        $('pr-play').addEventListener('click', () => (st.timer ? detener() : reproducir()));
     }
 
     function actualizarTiraDias() {
@@ -363,8 +441,9 @@
     function actualizarEncabezado() {
         const n = Object.keys(municipiosCultivo()).length;
         $('pr-titulo').textContent = `${D.variables[st.variable].nombre}, ${etiquetaModelo(st.modelo).toLowerCase()}`;
-        $('pr-subtitulo').textContent =
-            `${n} municipios productores de ${CULT[st.cultivo].etiqueta.toLowerCase()}`;
+        $('pr-subtitulo').textContent = esCom()
+            ? `${num(n, 0)} ${unidades(n)} de los municipios productores de ${CULT[st.cultivo].etiqueta.toLowerCase()}`
+            : `${n} municipios productores de ${CULT[st.cultivo].etiqueta.toLowerCase()}`;
         const f = aFecha(D.fechas[st.dia]);
         const fecha = fmtLargo.format(f);
         $('pr-fecha').innerHTML = '';
@@ -407,9 +486,11 @@
         const p = propsDe[st.gid];
         const info = municipiosCultivo()[st.gid];
         $('pr-serie-titulo').textContent = info.nombres.join(' / ');
-        $('pr-serie-meta').textContent =
-            `${p.departamento}, provincia ${p.provincia}. ${num(info.sup_ha, 0)} ha y ` +
-            `${num(info.prod_tn, 0)} t de ${CULT[st.cultivo].etiqueta.toLowerCase()} (censo agropecuario).`;
+        $('pr-serie-meta').textContent = esCom()
+            ? `Comunidad del municipio de ${SATComunidades.lugar(p)}` +
+              `${p.poblacion ? ` · ${num(p.poblacion, 0)} habitantes` : ''}. ${SATComunidades.notaPronostico(p, COM.info)}`
+            : `${p.departamento}, provincia ${p.provincia}. ${num(info.sup_ha, 0)} ha y ` +
+              `${num(info.prod_tn, 0)} t de ${CULT[st.cultivo].etiqueta.toLowerCase()} (censo agropecuario).`;
 
         if (typeof Chart === 'undefined') {
             $('pr-grafico').replaceWith(Object.assign(document.createElement('p'),
@@ -473,25 +554,42 @@
     // ---------------------------------------------------------------- CSV
     function descargarCSV() {
         const gids = Object.keys(municipiosCultivo());
-        const filas = [['cultivo', 'GID_3', 'departamento', 'municipio', 'fecha', 'variable', 'unidad', 'modelo', 'valor']];
         const q = (s) => `"${String(s).replace(/"/g, '""')}"`;
-        gids.forEach((gid) => {
-            const p = propsDe[gid];
-            const nombre = municipiosCultivo()[gid].nombres.join(' / ');
-            Object.keys(D.variables).forEach((v) => {
-                D.modelos.forEach((m) => {
-                    D.fechas.forEach((f, d) => {
-                        const x = valor(gid, m, d, v);
-                        filas.push([q(CULT[st.cultivo].etiqueta), gid, q(p.departamento), q(nombre), f, v,
-                            q(D.variables[v].unidad), q(m), x === null ? '' : x]);
+        const r2 = (x) => (x === null ? '' : Math.round(x * 100) / 100);
+        const vars = Object.keys(D.variables);
+        let filas;
+        if (esCom()) {
+            // Por comunidad puede haber miles de filas: formato ancho y solo el modelo elegido
+            filas = [['cultivo', 'id_comunidad', 'departamento', 'municipio', 'comunidad', 'ajuste_temp_c', 'modelo', 'fecha',
+                ...vars.map((v) => `${v}_${D.variables[v].unidad.replace(/[^A-Za-z%]/g, '')}`)]];
+            gids.forEach((gid) => {
+                const p = propsDe[gid];
+                const fijo = [q(CULT[st.cultivo].etiqueta), gid, q(p.departamento), q(p.municipio), q(p.comunidad),
+                    r2(p.ajuste_temp), q(st.modelo)];
+                D.fechas.forEach((f, d) => { filas.push([...fijo, f, ...vars.map((v) => r2(valor(gid, st.modelo, d, v)))]); });
+            });
+        } else {
+            filas = [['cultivo', 'GID_3', 'departamento', 'municipio', 'fecha', 'variable', 'unidad', 'modelo', 'valor']];
+            gids.forEach((gid) => {
+                const p = propsDe[gid];
+                const nombre = municipiosCultivo()[gid].nombres.join(' / ');
+                vars.forEach((v) => {
+                    D.modelos.forEach((m) => {
+                        D.fechas.forEach((f, d) => {
+                            const x = valor(gid, m, d, v);
+                            filas.push([q(CULT[st.cultivo].etiqueta), gid, q(p.departamento), q(nombre), f, v,
+                                q(D.variables[v].unidad), q(m), x === null ? '' : x]);
+                        });
                     });
                 });
             });
-        });
+        }
         const blob = new Blob(['\ufeff' + filas.map((r) => r.join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `pronostico_${st.cultivo.toLowerCase()}_${D.fecha_inicio}.csv`;
+        a.download = esCom()
+            ? `pronostico_comunidades_${st.cultivo.toLowerCase()}_${st.modelo.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_${D.fecha_inicio}.csv`
+            : `pronostico_${st.cultivo.toLowerCase()}_${D.fecha_inicio}.csv`;
         document.body.append(a);
         a.click();
         a.remove();

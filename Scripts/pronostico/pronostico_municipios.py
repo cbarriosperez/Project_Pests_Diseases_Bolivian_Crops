@@ -11,15 +11,30 @@ Entrada : data/geo/municipios_bolivia.geojson   (punto de consulta lat/lon por m
           data/geo/cultivos_municipios.json     (municipios productores por cultivo)
 Salida  : data/pronostico/pronostico_latest.json
 
+Nivel comunidad (--nivel comunidades):
+  Entrada : data/geo/comunidades/comunidades_bolivia.geojson (preparar_comunidades.py)
+  Salida  : data/pronostico/pronostico_comunidades_latest.json
+  Las ~20.800 comunidades de los municipios productores se agrupan en celdas de una malla regular
+  (RESOLUCION_COMUNIDADES grados) y se consulta un punto por celda: el promedio de los puntos de las
+  comunidades que contiene. Con la API gratuita la malla es de 0,25° (~1.200 puntos, opción B); con
+  API key es de 0,1° (~4.700 puntos, opción A). Cada comunidad toma el pronóstico de su celda y la web
+  ajusta su temperatura por la diferencia de altitud entre la comunidad y el punto de la celda
+  (gradiente de 6,5 °C/km; altitudes en data/geo/comunidades/elevacion_comunidades.json).
+
 Uso     : python Scripts/pronostico/pronostico_municipios.py
           python Scripts/pronostico/pronostico_municipios.py --limite-municipios 20   (prueba rápida)
+          python Scripts/pronostico/pronostico_municipios.py --nivel comunidades
 
 Variables de entorno opcionales:
   OPEN_METEO_API_KEY  clave del plan comercial de Open-Meteo. Si existe, se usan los endpoints
                       "customer-" y se activan automáticamente los modelos de ensamble.
   USAR_ENSAMBLES      "1"/"0" para forzar o desactivar los ensambles (por defecto: activos solo si
                       hay API key, porque en el plan gratuito exceden la cuota diaria con 305 municipios).
+                      En el nivel comunidad los ensambles no se usan (su peso por punto es muy alto).
+  RESOLUCION_COMUNIDADES  tamaño de celda en grados para el nivel comunidad (por defecto 0.25 sin API key
+                      y 0.1 con API key; 0 = un punto por comunidad).
 """
+import math
 import argparse
 import json
 import os
@@ -41,6 +56,9 @@ RAIZ = Path(__file__).resolve().parents[2]
 RUTA_MUNICIPIOS = RAIZ / "data" / "geo" / "municipios_bolivia.geojson"
 RUTA_CULTIVOS = RAIZ / "data" / "geo" / "cultivos_municipios.json"
 RUTA_SALIDA = RAIZ / "data" / "pronostico" / "pronostico_latest.json"
+RUTA_COMUNIDADES = RAIZ / "data" / "geo" / "comunidades" / "comunidades_bolivia.geojson"
+RUTA_SALIDA_COMUNIDADES = RAIZ / "data" / "pronostico" / "pronostico_comunidades_latest.json"
+GRADIENTE_TEMP_C_POR_KM = 6.5   # gradiente térmico vertical estándar (lo aplica la web por comunidad)
 
 # ----------------------------------------------------------------------------------------------
 # Configuración (equivale al Paso 3 del notebook)
@@ -62,6 +80,8 @@ CONFIG = {
 API_KEY = os.environ.get("OPEN_METEO_API_KEY", "").strip()
 _env_ens = os.environ.get("USAR_ENSAMBLES", "").strip()
 USAR_ENSAMBLES = (_env_ens == "1") if _env_ens in ("0", "1") else bool(API_KEY)
+_env_res = os.environ.get("RESOLUCION_COMUNIDADES", "").strip()
+RESOLUCION_COMUNIDADES = float(_env_res) if _env_res else (0.1 if API_KEY else 0.25)
 
 if API_KEY:
     URL_FORECAST = "https://customer-api.open-meteo.com/v1/forecast"
@@ -95,7 +115,7 @@ MODELOS_ENSAMBLE = {
     "AIFS-ENS":    {"endpoint": "ensemble", "miembros": 51, "candidatos": ["ecmwf_aifs025", "ecmwf_aifs025_ensemble"]},
     "GEPS":        {"endpoint": "ensemble", "miembros": 21, "candidatos": ["gem_global", "gem_ensemble"]},
 }
-MODELOS = {**MODELOS_DETERMINISTAS, **(MODELOS_ENSAMBLE if USAR_ENSAMBLES else {})}
+MODELOS = {**MODELOS_DETERMINISTAS, **(MODELOS_ENSAMBLE if USAR_ENSAMBLES else {})}   # se ajusta en main()
 MULTIMODELO = "MULTIMODELO"
 
 # ----------------------------------------------------------------------------------------------
@@ -360,6 +380,31 @@ def cargar_municipios(limite=None):
     return productores, [coords[g][0] for g in productores], [coords[g][1] for g in productores]
 
 
+def clave_celda(lat, lon, res):
+    """Celda de la malla regular que contiene el punto (misma regla en la web: Math.floor)."""
+    if res <= 0:
+        return None
+    return f"{math.floor(lat / res)}_{math.floor(lon / res)}"
+
+
+def cargar_puntos_comunidades(res, limite=None):
+    """Un punto de consulta por celda: el promedio de los puntos de las comunidades que contiene.
+    Con res = 0 se consulta cada comunidad (su id es la clave)."""
+    with open(RUTA_COMUNIDADES, encoding="utf-8") as f:
+        feats = json.load(f)["features"]
+    grupos = {}
+    for ft in feats:
+        p = ft["properties"]
+        clave = clave_celda(p["y"], p["x"], res) or p["id"]
+        grupos.setdefault(clave, []).append((p["y"], p["x"]))
+    claves = sorted(grupos)
+    if limite:
+        claves = claves[:limite]
+    lats = [round(float(np.mean([c[0] for c in grupos[k]])), 4) for k in claves]
+    lons = [round(float(np.mean([c[1] for c in grupos[k]])), 4) for k in claves]
+    return claves, lats, lons, len(feats)
+
+
 def redondear_matriz(m):
     d = CONFIG["decimales"]
     return [[None if np.isnan(v) else round(float(v), d) for v in fila] for fila in m]
@@ -374,18 +419,29 @@ def escribir_resumen_gha(lineas):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--limite-municipios", type=int, default=None, help="solo los N primeros (prueba)")
-    ap.add_argument("--salida", type=Path, default=RUTA_SALIDA)
+    ap.add_argument("--limite-municipios", type=int, default=None, help="solo los N primeros puntos (prueba)")
+    ap.add_argument("--nivel", choices=["municipios", "comunidades"], default="municipios")
+    ap.add_argument("--salida", type=Path, default=None)
     args = ap.parse_args()
+    comunidades = args.nivel == "comunidades"
+    salida_json = args.salida or (RUTA_SALIDA_COMUNIDADES if comunidades else RUTA_SALIDA)
+    global MODELOS
+    if comunidades:   # los ensambles pesarían decenas de veces más por punto
+        MODELOS = dict(MODELOS_DETERMINISTAS)
 
     t0 = time.time()
     fecha_ini = datetime.now(ZoneInfo(CONFIG["timezone"])).date()   # fecha local de Bolivia
     fecha_fin = fecha_ini + timedelta(days=CONFIG["dias_pronostico"] - 1)
     fechas = [(fecha_ini + timedelta(days=d)).isoformat() for d in range(CONFIG["dias_pronostico"])]
 
-    gids, lats, lons = cargar_municipios(args.limite_municipios)
-    log(f"Pronóstico {fecha_ini} → {fecha_fin} | {len(gids)} municipios | "
-        f"API {'comercial' if API_KEY else 'gratuita'} | ensambles {'SÍ' if USAR_ENSAMBLES else 'NO'}")
+    if comunidades:
+        gids, lats, lons, n_com = cargar_puntos_comunidades(RESOLUCION_COMUNIDADES, args.limite_municipios)
+        unidad = f"puntos (celdas de {RESOLUCION_COMUNIDADES}° para {n_com} comunidades)"
+    else:
+        gids, lats, lons = cargar_municipios(args.limite_municipios)
+        unidad = "municipios"
+    log(f"Pronóstico {fecha_ini} → {fecha_fin} | {len(gids)} {unidad} | "
+        f"API {'comercial' if API_KEY else 'gratuita'} | ensambles {'SÍ' if USAR_ENSAMBLES and not comunidades else 'NO'}")
 
     modelos = resolver_modelos()
     if not modelos:
@@ -393,6 +449,7 @@ def main():
         return 1
 
     datos = {v: {} for v in VARIABLES_SALIDA}     # var -> modelo -> array(n_mun, n_dias)
+    elevacion = [None] * len(gids)                # altitud del punto usada por Open-Meteo (DEM 90 m)
     fallidos, tiempos_modelo = {}, {}
     for nombre, info in modelos.items():
         t_m = time.time()
@@ -402,6 +459,9 @@ def main():
             respuestas = descargar(lats, lons, url_de(info["endpoint"]), info["codigo"],
                                    fecha_ini, fecha_fin, necesita_hr_horaria, info["miembros"])
             filas = [respuesta_a_matriz(r, fechas, necesita_hr_horaria) for r in respuestas]
+            for i, r in enumerate(respuestas):
+                if elevacion[i] is None and r.get("elevation") is not None:
+                    elevacion[i] = round(float(r["elevation"]))
             for var in VARIABLES_SALIDA:
                 datos[var][nombre] = np.vstack([f[var] for f in filas])
         except CuotaAgotada as e:  # cuota horaria/diaria: los demás modelos también fallarían
@@ -445,26 +505,34 @@ def main():
         "modelos": orden_modelos,
         "codigos_modelo": {m: modelos[m]["codigo"] for m in exitosos},
         "modelos_fallidos": fallidos,
-        "usa_ensambles": USAR_ENSAMBLES,
+        "usa_ensambles": USAR_ENSAMBLES and not comunidades,
         "dias_con_dato": cobertura,
         "n_modelos_multimodelo": n_modelos_multi,
         "municipios": gids,
         "datos": {v: {m: redondear_matriz(datos[v][m]) for m in orden_modelos} for v in VARIABLES_SALIDA},
     }
+    if comunidades:
+        # "municipios" contiene aquí las claves de celda; se agregan sus coordenadas y altitud
+        salida.update({
+            "nivel": "comunidades",
+            "resolucion_grados": RESOLUCION_COMUNIDADES,
+            "gradiente_temp_c_por_km": GRADIENTE_TEMP_C_POR_KM,
+            "puntos_lat": lats, "puntos_lon": lons, "puntos_elevacion_m": elevacion,
+        })
 
-    args.salida.parent.mkdir(parents=True, exist_ok=True)
-    tmp = args.salida.with_suffix(".json.tmp")
+    salida_json.parent.mkdir(parents=True, exist_ok=True)
+    tmp = salida_json.with_suffix(".json.tmp")
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, separators=(",", ":"))
-    tmp.replace(args.salida)   # escritura atómica: nunca queda un JSON a medias
+    tmp.replace(salida_json)   # escritura atómica: nunca queda un JSON a medias
 
     dur = round((time.time() - t0) / 60, 1)
-    kb = args.salida.stat().st_size / 1024
-    log(f"Listo en {dur} min → {args.salida} ({kb:.0f} KB). "
+    kb = salida_json.stat().st_size / 1024
+    log(f"Listo en {dur} min → {salida_json} ({kb:.0f} KB). "
         f"Modelos OK: {len(exitosos)}/{len(MODELOS)} | peso API estimado: {limitador.total:,.0f} llamadas")
 
-    resumen = [f"### Pronóstico {fechas[0]} → {fechas[-1]}", "",
-               f"{len(gids)} municipios · {dur} min · {kb:.0f} KB · ensambles: {'sí' if USAR_ENSAMBLES else 'no'} · "
+    resumen = [f"### Pronóstico {'por comunidades ' if comunidades else ''}{fechas[0]} → {fechas[-1]}", "",
+               f"{len(gids)} {unidad} · {dur} min · {kb:.0f} KB · ensambles: {'sí' if USAR_ENSAMBLES and not comunidades else 'no'} · "
                f"peso API estimado: {limitador.total:,.0f} llamadas", "",
                "| Modelo | Código | Días con dato | Tiempo (s) | Estado |", "|---|---|---|---|---|"]
     for m in MODELOS:
