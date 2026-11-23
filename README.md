@@ -8,7 +8,7 @@
 
 **[➡️ Abrir la plataforma](https://cbarriosperez.github.io/Project_Pests_Diseases_Bolivian_Crops/)**
 
-Plataforma abierta que combina **series climáticas históricas**, **pronósticos meteorológicos diarios** y **15 modelos agroclimáticos** para anticipar el riesgo de plagas y enfermedades en **15 cultivos priorizados de Bolivia**, a nivel municipal. Todo el flujo, desde la descarga del pronóstico hasta la publicación de los mapas de alerta, se ejecuta **automáticamente cada día** en GitHub Actions.
+Plataforma abierta que combina **series climáticas históricas**, **pronósticos meteorológicos diarios** y **15 modelos agroclimáticos** para anticipar el riesgo de plagas y enfermedades en **15 cultivos priorizados de Bolivia**, por **municipio** y por **comunidad**. Todo el flujo, desde la descarga del pronóstico hasta la publicación de los mapas de alerta, se ejecuta **automáticamente cada día** en GitHub Actions.
 
 Este documento describe en detalle la plataforma: datos, modelos, scripts, arquitectura, automatización e interfaz web.
 
@@ -104,18 +104,25 @@ pie showData
 
 ## 2. La plataforma en un vistazo
 
-La plataforma web tiene cinco secciones: **Presentación**, **Explorar Datos**, **Metodología**, **Reportes** y **Scripts**. El corazón es el **Explorador de Datos**, con tres herramientas:
+La plataforma web tiene cinco secciones: **Presentación**, **Explorar Datos**, **Metodología**, **Reportes** y **Scripts**. El corazón es el **Explorador de Datos**, con cuatro herramientas:
 
 | Herramienta | Qué muestra | Fuente | Actualización |
 |---|---|---|---|
 | 🌦️ **Pronóstico del clima** | Precipitación, Tmax, Tmin y humedad relativa para 16 días, por municipio productor y modelo | `data/pronostico/pronostico_latest.json` | Diaria (06:00 Bolivia) |
 | 🐛 **Alertas de plagas y enfermedades** | Semáforo de riesgo por cultivo, plaga y municipio, con el detalle de cada condición | `data/alertas/alertas_latest.json` | Diaria, justo después del pronóstico |
 | 🗺️ **Riesgo histórico** | Mapas del índice de riesgo calculado con clima observado (2023–2025) | `Salidas_Modelos_Agroclimaticos/` + `explorer_data.js` | Estática |
+| 🧪 **Simulador de riesgo** | Umbrales, pesos y variables definidos por el usuario para explorar plagas o enfermedades nuevas; exporta enlace, CSV, JSON y script Python | `pronostico_latest.json` (cálculo en el navegador) | Diaria (usa el pronóstico vigente) |
+
+En el pronóstico, las alertas y el simulador, el selector **«Ver resultados por: Municipio / Comunidad»** cambia entre los 305 municipios productores y las **20.777 comunidades** (Censo 2024) de esos municipios (sección [5.5](#55-nivel-comunidad)). Los tres selectores están sincronizados.
 
 <table>
 <tr>
 <td width="50%"><img src="docs/img/captura_pronostico.jpg" alt="Explorador del pronóstico a 16 días"><br><sub><b>Pronóstico del clima:</b> mapa por día, tira de 16 días con número de modelos que aportan y serie del municipio en todos los modelos.</sub></td>
 <td width="50%"><img src="docs/img/captura_alertas.jpg" alt="Explorador de alertas de plagas y enfermedades"><br><sub><b>Alertas:</b> resumen por nivel, mapa semáforo, municipios con mayor riesgo y detalle de condiciones por modelo.</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/img/captura_comunidades.jpg" alt="Alertas por comunidad"><br><sub><b>Nivel «Comunidad»:</b> alertas de gorgojo de los Andes en papa para 15.717 comunidades, con el detalle de cada una y el ajuste de temperatura por altitud.</sub></td>
+<td width="50%"></td>
 </tr>
 </table>
 
@@ -131,7 +138,7 @@ flowchart TB
         direction LR
         CH["CHIRPS v3<br/>precipitación"]
         AG["AgERA5 v2<br/>Tmax · Tmin · HR · ETo · VPD"]
-        SHP["GADM 4.1 + censo<br/>agropecuario"]
+        SHP["GADM 4.1 + censo agropecuario<br/>+ comunidades Censo 2024"]
         OM["Open-Meteo API<br/>GFS · ECMWF · AIFS · ICON · GEM"]
     end
 
@@ -142,8 +149,9 @@ flowchart TB
         end
         subgraph D["Diario · Python · GitHub Actions"]
             P1["pronostico_<br/>municipios.py"] --> P2["correr_modelos.py<br/>15 modelos"]
+            P3["pronostico_municipios.py<br/>--nivel comunidades"]
         end
-        P0["preparar_<br/>geometria.py"]
+        P0["preparar_<br/>geometria.py · comunidades.py"]
     end
 
     subgraph REPO["③ Datos publicados en el repositorio"]
@@ -152,9 +160,10 @@ flowchart TB
         G["data/geo/<br/>geometría + cultivos"]
         J1["pronostico_<br/>latest.json"]
         J2["alertas_<br/>latest.json"]
+        J3["pronostico_comunidades_<br/>latest.json"]
     end
 
-    W["④ Plataforma web · GitHub Pages<br/>Pronóstico · Alertas · Riesgo histórico"]
+    W["④ Plataforma web · GitHub Pages<br/>Pronóstico · Alertas · Riesgo histórico · Simulador<br/>por municipio o comunidad"]
 
     CH & AG --> R1
     SHP --> P0
@@ -163,7 +172,9 @@ flowchart TB
     P0 --> G
     P1 --> J1
     P2 --> J2
-    S & G & J1 & J2 --> W
+    OM --> P3
+    P3 --> J3
+    S & G & J1 & J2 & J3 --> W
 ```
 
 ### 3.1 Componentes y tecnologías
@@ -184,6 +195,7 @@ flowchart TB
 - **Datos versionados en Git:** cada corrida diaria es un commit, así que el **historial de commits funciona como archivo de pronósticos y alertas pasados**.
 - **Un script por modelo:** cada indicador vive en su propio archivo, autocontenido y descargable desde la web, igual que sus pares en R.
 - **Fallos aislados:** si un modelo climático o un indicador falla, los demás siguen; si todo falla, se conserva la versión anterior.
+- **Riesgo por comunidad en el navegador:** las alertas de miles de comunidades se calculan en el navegador con el mismo núcleo del simulador, en lugar de publicar decenas de MB diarios.
 
 ---
 
@@ -194,9 +206,11 @@ Project_Pests_Diseases_Bolivian_Crops/
 ├── index.html                          # Sitio web (todas las secciones)
 ├── pronostico_explorer.js / .css       # Explorador: pronóstico 16 días + selector de herramientas
 ├── alertas_explorer.js / .css          # Explorador: alertas de plagas y enfermedades
+├── simulador_explorer.js / .css        # Explorador: simulador de riesgo (núcleo de cálculo compartido)
+├── comunidades_datos.js                # Nivel «Comunidad»: datos, ajuste por altitud y alertas en el navegador
 ├── explorer_data.js                    # Índice de mapas históricos (cultivo → plaga → año → periodo → PNG)
 ├── .github/workflows/
-│   └── pronostico_diario.yml           # Automatización diaria (pronóstico + alertas)
+│   └── pronostico_diario.yml           # Automatización diaria (municipios + comunidades)
 ├── Scripts/
 │   ├── Bases de datos climáticas historicas/
 │   │   ├── 01_Precipitacion_CHIRPS.R
@@ -211,18 +225,23 @@ Project_Pests_Diseases_Bolivian_Crops/
 │   │   ├── <Cultivo>/Script_Indice_Riesgo_<Cultivo>_Pronostico.py
 │   │   ├── Durazno/{Aranuela_roja,Oidio}/...
 │   │   ├── correr_modelos.py           # Ejecuta los 15 y escribe alertas_latest.json
+│   │   ├── correr_modelos_comunidades.py  # Los 15 por comunidad (CSV, revisión y replicación)
 │   │   └── README.md
 │   └── pronostico/
 │       ├── preparar_geometria.py       # Shapefiles → GeoJSON + índice de cultivos
-│       ├── pronostico_municipios.py    # Descarga Open-Meteo → pronostico_latest.json
+│       ├── pronostico_municipios.py    # Descarga Open-Meteo → pronostico_latest.json (y por celdas con --nivel comunidades)
+│       ├── preparar_comunidades.py     # Comunidades del Censo 2024 → municipios productores → GeoJSON
+│       ├── elevacion_comunidades.py    # Altitud de cada comunidad (Copernicus DEM GLO-90)
 │       └── requirements.txt
 ├── data/
 │   ├── geo/
 │   │   ├── municipios_bolivia.geojson      # 344 municipios simplificados + punto de consulta
 │   │   ├── departamentos_bolivia.geojson   # 9 departamentos
 │   │   ├── cultivos_municipios.json        # cultivo → municipios productores (ha, t)
-│   │   └── shapefiles/                     # GADM 4.1 nivel 3 y shapefiles por cultivo
+│   │   ├── comunidades/                    # comunidades_bolivia.geojson + elevacion_comunidades.json
+│   │   └── shapefiles/                     # GADM 4.1 nivel 3, shapefiles por cultivo y comunidades (Censo 2024)
 │   ├── pronostico/pronostico_latest.json   # Generado a diario
+│   ├── pronostico/pronostico_comunidades_latest.json   # Generado a diario (celdas)
 │   └── alertas/alertas_latest.json         # Generado a diario
 ├── Salidas_Modelos_Agroclimaticos/     # Mapas históricos (salidas_<cultivo>_<año>/*.png)
 ├── Reportes/                           # Reportes técnicos en PDF
@@ -292,6 +311,9 @@ El horizonte efectivo varía por modelo. En la corrida del 23-oct-2026:
 | `municipios_bolivia.geojson` | 344 municipios simplificados (~650 m, topología preservada) + `lat`/`lon` del punto de consulta | `preparar_geometria.py` |
 | `departamentos_bolivia.geojson` | 9 departamentos (disolución de municipios) | `preparar_geometria.py` |
 | `cultivos_municipios.json` | Por cultivo: municipios productores con nombres, superficie (ha) y producción (t) | `preparar_geometria.py` |
+| `Comunidades_2025_Pol.shp` | 22.978 comunidades con código INE, nombre, población y viviendas | Censo 2024 (INE) |
+| `comunidades/comunidades_bolivia.geojson` | 20.777 comunidades de los municipios productores, simplificadas, con su municipio y punto de consulta | `preparar_comunidades.py` |
+| `comunidades/elevacion_comunidades.json` | Altitud (m) de cada comunidad | `elevacion_comunidades.py` |
 
 | Mapa de municipios productores | Municipios y superficie por cultivo |
 |---|---|
@@ -318,6 +340,23 @@ El horizonte efectivo varía por modelo. En la corrida del 23-oct-2026:
   "n_modelos_multimodelo": { "precipitation_sum": [5, 5, "...", 1] },   // modelos que aportan cada día
   "municipios": ["BOL.1.1.2_2", "..."],                    // 305 GID_3
   "datos": { "<variable>": { "<modelo>": [[/* 16 valores */], "... una fila por municipio"] } }
+}
+```
+</details>
+
+<details>
+<summary><b><code>data/pronostico/pronostico_comunidades_latest.json</code></b> (≈ 2,2 MB)</summary>
+
+Mismo formato que `pronostico_latest.json`, con una fila por **celda** en lugar de por municipio y estos campos adicionales:
+
+```jsonc
+{
+  "nivel": "comunidades",
+  "resolucion_grados": 0.25,
+  "gradiente_temp_c_por_km": 6.5,
+  "municipios": ["-40_-262", "..."],        // clave de celda: floor(lat/res)_floor(lon/res)
+  "puntos_lat": [-9.9876, "..."], "puntos_lon": [-65.4321, "..."],
+  "puntos_elevacion_m": [215, "..."]         // altitud del punto según Open-Meteo
 }
 ```
 </details>
@@ -370,6 +409,26 @@ Algunos municipios del censo comparten un mismo polígono GADM (p. ej. Jesús de
 </details>
 
 ---
+
+### 5.5 Nivel «Comunidad»
+
+Las comunidades del Censo 2024 se recortan a las zonas productoras actuales: se conservan las que caen (por su punto representativo) en los 305 municipios productores, y cada cultivo «ve» las comunidades de sus municipios.
+
+| Cultivo | Comunidades | Cultivo | Comunidades |
+|---|---:|---|---:|
+| Maíz de grano | 17.613 | Café | 4.764 |
+| Papa | 15.717 | Lechuga | 3.875 |
+| Cebolla | 11.235 | Maíz choclo | 3.058 |
+| Quinua | 8.850 | Uva | 2.207 |
+| Tomate | 7.461 | Ajo | 1.181 |
+| Durazno | 7.351 | Frutilla | 851 |
+| Naranja | 6.833 | Maíz berza | 779 |
+| Banano | 5.730 | **Total (sin repetir)** | **20.777** |
+
+- **Pronóstico por celdas:** las comunidades se agrupan en una grilla y se consulta un punto por celda (el promedio de sus comunidades). Sin API key se usan celdas de 0,25° (1.188 puntos, dentro del cupo gratuito); con API key, 0,1° por defecto (4.728). La variable `RESOLUCION_COMUNIDADES` fija otra resolución; `0` consulta un punto por comunidad.
+- **Ajuste por altitud:** cada comunidad toma el pronóstico de su celda; la precipitación y la humedad se usan tal cual y la temperatura máxima y mínima se ajustan con un gradiente de 6,5 °C/km: `T_comunidad = T_celda + 0,0065 × (z_celda − z_comunidad)`. La altitud de la celda es la que reporta Open-Meteo y la de la comunidad viene de Copernicus DEM GLO-90 (el mismo DEM que usa Open-Meteo).
+- **Alertas en el navegador:** `comunidades_datos.js` construye el pronóstico de cada comunidad y calcula los 15 indicadores con el núcleo del simulador. Se validó contra `correr_modelos_comunidades.py`: 0 diferencias en 624.462 pares comunidad–modelo–indicador.
+- **Sin superficie ni producción por comunidad:** el censo agropecuario es municipal, así que en este nivel no se muestran hectáreas ni toneladas.
 
 ## 6. Modelos agroclimáticos
 
@@ -589,7 +648,17 @@ flowchart TD
 pip install -r Scripts/pronostico/requirements.txt
 python Scripts/pronostico/pronostico_municipios.py                         # todos
 python Scripts/pronostico/pronostico_municipios.py --limite-municipios 20  # prueba rápida
+python Scripts/pronostico/pronostico_municipios.py --nivel comunidades      # pronóstico por celdas
 ```
+
+### 7.4b Nivel «Comunidad»
+
+| Script | Qué hace | Cuándo |
+|---|---|---|
+| `Scripts/pronostico/preparar_comunidades.py` | Corta las comunidades del Censo 2024 a los municipios productores y escribe `comunidades_bolivia.geojson` (requiere `geopandas` ≥ 1.0 y `shapely` ≥ 2.1) | Una vez, o al cambiar los shapefiles |
+| `Scripts/pronostico/elevacion_comunidades.py` | Altitud de cada comunidad leyendo solo los bloques necesarios de las teselas Copernicus DEM GLO-90 en AWS (requiere `rasterio`) | Una vez; GitHub Actions lo corre si falta el archivo |
+| `pronostico_municipios.py --nivel comunidades` | Pronóstico por celdas → `pronostico_comunidades_latest.json` (solo modelos deterministas) | Diaria (GitHub Actions) |
+| `Scripts/Modelos_Agroclimaticos_Python/correr_modelos_comunidades.py` | Los 15 modelos por comunidad, con el ajuste por altitud; un CSV por indicador en `Salidas_Modelos_Agroclimaticos/Pronostico_Comunidades/` | Manual (revisión y replicación) |
 
 ### 7.5 Modelos agroclimáticos en Python
 
@@ -629,7 +698,9 @@ Columnas del CSV individual: `GID_3, municipio, modelo, ventana_inicio, ventana_
 | `index.html` | Estructura de todas las secciones, estilos base, carrusel del banner (con datos vivos de la corrida), metodología interactiva, selector de proyectos de scripts, explorador histórico |
 | `pronostico_explorer.js` | Selector de las tres herramientas del explorador (pestañas accesibles con teclado); mapa Leaflet del pronóstico por día; escalas de color fijas por variable; tira de 16 días con reproducción automática y puntos de modelos disponibles; serie del municipio en todos los modelos (Chart.js); descarga CSV; aviso de pronóstico desactualizado |
 | `alertas_explorer.js` | Selectores de cultivo, plaga y modelo; tarjetas de resumen por nivel (municipios y % de superficie); mapa semáforo; fórmula del indicador; ranking de municipios con mayor riesgo; detalle de condiciones y alerta según cada modelo; descarga CSV |
-| `pronostico_explorer.css`, `alertas_explorer.css` | Estilos de los exploradores, reutilizando los tokens de color de la página |
+| `simulador_explorer.js` | Simulador de riesgo: condiciones definidas por el usuario, histogramas, mapa, enlace compartible y exportación (CSV, JSON, script Python). Expone el núcleo de cálculo `window.SimuladorRiesgo` |
+| `comunidades_datos.js` | Nivel «Comunidad» (`window.SATComunidades`): carga de datos, ajuste de temperatura por altitud, alertas por comunidad y sincronización del selector de nivel |
+| `pronostico_explorer.css`, `alertas_explorer.css`, `simulador_explorer.css` | Estilos de los exploradores, reutilizando los tokens de color de la página |
 | `explorer_data.js` | Índice `cultivo → plaga → año → periodo → ruta PNG` para la herramienta Riesgo histórico |
 
 ### 7.8 Utilitarios
@@ -724,10 +795,12 @@ sequenceDiagram
 | Permisos | `contents: write` (para el commit de los JSON) |
 | Concurrencia | Grupo `pronostico-diario`, sin cancelar corridas en curso |
 | Guarda | Solo corre en `cbarriosperez/Project_Pests_Diseases_Bolivian_Crops` (no en forks) |
-| Tiempo máximo | 120 min (una corrida típica con el plan gratuito tarda ~5 min) |
+| Trabajos | `pronostico` (municipios y alertas) y `comunidades` (después del primero; pronóstico por celdas y, la primera vez, altitud de las comunidades) |
+| Tiempo máximo | 120 min el municipal (~5 min típicos); 240 min el de comunidades (1,5–2 h con el plan gratuito, por el límite horario de Open-Meteo) |
 | Checkout | Disperso: `Scripts/pronostico`, `Scripts/Modelos_Agroclimaticos_Python`, `data/geo`, `data/pronostico`, `data/alertas` |
 | Secret opcional | `OPEN_METEO_API_KEY` (Settings → Secrets and variables → Actions) |
-| Commit | `data/pronostico/pronostico_latest.json` y `data/alertas/alertas_latest.json`; si no cambiaron, no hay commit |
+| Commit | `pronostico_latest.json` y `alertas_latest.json`; en el trabajo de comunidades, `pronostico_comunidades_latest.json` (y `elevacion_comunidades.json` la primera vez); si no cambiaron, no hay commit |
+| Variable opcional | `RESOLUCION_COMUNIDADES` (Settings → Variables): resolución de las celdas en grados |
 | Resumen | Tabla por modelo (código, días con dato, tiempo, estado) en el *summary* de la corrida |
 
 **Manejo de fallos:**
@@ -751,7 +824,7 @@ sequenceDiagram
 |---|---|
 | **Banner** | Carrusel de 4 diapositivas: pronóstico del clima y alertas (con fecha de actualización y número de municipios en alerta alta, leídos de `alertas_latest.json`), presentación del SAT y socios |
 | **Presentación** | Objetivo, fases del proyecto, tarjetas interactivas de los 15 cultivos (importancia y amenaza), infografía descargable y video introductorio |
-| **Explorar Datos** | Las tres herramientas (sección 2), destacada en el menú |
+| **Explorar Datos** | Las cuatro herramientas (sección 2), por municipio o por comunidad, destacada en el menú |
 | **Metodología** | Las 5 actividades en un panel interactivo, con objetivo, proceso y entregables |
 | **Reportes** | Reportes técnicos en PDF descargables |
 | **Scripts** | Cuatro proyectos con descripción, requisitos y descargas: series históricas (R), notebook de visualización (Colab), modelos en R y modelos en Python |
@@ -777,7 +850,9 @@ python -m http.server 8000
 |---|---|
 | Correr el pronóstico y las alertas fuera de horario | GitHub → **Actions** → "Pronóstico diario 16 días + alertas agroclimáticas" → **Run workflow** |
 | Probar rápido el flujo | Run workflow con `limite_municipios = 20` |
-| Activar ensambles (GEFS, ECMWF-ENS, AIFS-ENS, GEPS) | Agregar el secret `OPEN_METEO_API_KEY` con una clave del plan comercial de Open-Meteo |
+| Activar ensambles (GEFS, ECMWF-ENS, AIFS-ENS, GEPS) | Agregar el secret `OPEN_METEO_API_KEY` con una clave del plan comercial de Open-Meteo (con la clave, el nivel «Comunidad» pasa también a celdas de 0,1°) |
+| Cambiar la resolución del nivel «Comunidad» | Variable `RESOLUCION_COMUNIDADES` del repositorio (p. ej. `0.1`; `0` = un punto por comunidad, requiere API key) |
+| Actualizar las comunidades | Reemplazar el shapefile en `data/geo/shapefiles/Shapefiles_comunidades/`, correr `preparar_comunidades.py` y borrar `elevacion_comunidades.json` para que se recalcule |
 | Consultar pronósticos o alertas de días anteriores | Historial de commits de `data/pronostico/pronostico_latest.json` o `data/alertas/alertas_latest.json` |
 | Cambiar un umbral o peso | Editar `calcular_indice_*()` y `CONDICIONES` del script Python (y su par en R para mantener la coherencia) |
 | Agregar un indicador | Crear `Scripts/Modelos_Agroclimaticos_Python/<Cultivo>/Script_Indice_Riesgo_<X>_Pronostico.py` siguiendo la estructura de los demás; `correr_modelos.py` y la web lo detectan solos |
@@ -791,6 +866,7 @@ python -m http.server 8000
 
 - **Pronóstico puntual:** cada municipio se representa con un punto dentro de su polígono, no con el promedio de toda su superficie. En municipios grandes o de relieve complejo (Andes, Yungas), el punto puede no representar todas las zonas productoras.
 - **Resolución de los modelos globales:** del orden de 10 a 25 km; no resuelven microclimas de valles estrechos.
+- **Nivel «Comunidad»:** con el plan gratuito, las comunidades de una misma celda de 0,25° comparten la lluvia y la humedad; solo la temperatura se ajusta por altitud. En el 6 % de las comunidades el ajuste supera los 5 °C porque el punto de la celda cae lejos de su altitud (ver hoja de ruta).
 - **Incertidumbre creciente con el plazo:** la habilidad de los pronósticos disminuye después de la primera semana. Los indicadores con ventanas de 14–15 días dependen de pocos modelos al final (con el plan gratuito, solo GFS en los días 15–16).
 - **Ventana desde hoy:** las alertas describen condiciones futuras; no incorporan la lluvia o temperatura de los días previos (relevante para la racha seca).
 - **Umbrales:** provienen de la literatura y de la consulta a expertos (catálogo de plagas y enfermedades). Una alerta indica **condiciones climáticas favorables**, no la presencia confirmada de la plaga; su calibración con registros de incidencia en campo es una línea de trabajo futura.
@@ -822,7 +898,7 @@ python -m http.server 8000
 | [Reporte 2: Metodología y cronograma del SAT](Reportes/CIAT_Reporte%202_Informe%20Metodológico%20y%20Cronograma%20del%20Sistema%20de%20Alerta%20Temprana.pdf) | Mayo 2026 | Marco metodológico, componentes y cronograma |
 | [Reporte 3: Generación de series climáticas históricas](Reportes/CIAT_Reporte%203_Generación%20de%20series%20climática%20históricas_Bolivia.pdf) | Julio 2026 | Procesamiento y armonización de CHIRPS y AgERA5 |
 
-**Productos de software:** series climáticas a 5 km (1981–2025), 15 modelos en R, 15 modelos en Python, motor de pronóstico y alertas automatizado, plataforma web pública.
+**Productos de software:** series climáticas a 5 km (1981–2025), 15 modelos en R, 15 modelos en Python, motor de pronóstico y alertas automatizado (por municipio y por comunidad), simulador de riesgo y plataforma web pública.
 
 ---
 
@@ -834,6 +910,8 @@ python -m http.server 8000
 - [ ] Pronósticos estacionales (CCA + remuestreo histórico a escala diaria), contemplados en el plan de trabajo.
 - [ ] Validación de las alertas con registros de incidencia en campo.
 - [ ] Modelo para Maíz berza.
+- [ ] Nivel «Comunidad»: usar como punto de cada celda la comunidad de altitud mediana, para reducir los ajustes de temperatura extremos.
+- [ ] Evaluación del pronóstico de The Weather Company como modelo adicional (en curso, con licencia de prueba y uso interno: sus datos no se publican en este repositorio). Si mejora el pronóstico y la licencia del BDP lo permite, integrarlo con un secret `TWC_API_KEY`.
 - [ ] Actualizar `actions/checkout` y `actions/setup-python` a versiones con Node.js 24.
 
 ---
@@ -846,6 +924,8 @@ python -m http.server 8000
 | AgERA5 v2 | Temperatura, HR, ETo, VPD | Copernicus Climate Change Service (C3S). Boogaard et al. (2020), C3S Climate Data Store. Licencia Copernicus |
 | Open-Meteo | Pronóstico diario | [open-meteo.com](https://open-meteo.com/), datos CC BY 4.0; plan gratuito para uso no comercial |
 | GADM 4.1 | Límites municipales | [gadm.org](https://gadm.org/); uso académico y no comercial |
+| Censo de Población y Vivienda 2024 | Comunidades (polígonos, nombre, población) | Instituto Nacional de Estadística (INE) de Bolivia |
+| Copernicus DEM GLO-90 | Altitud de las comunidades | © DLR e.V. 2010-2014 y © Airbus Defence and Space GmbH 2014-2018, proporcionado bajo COPERNICUS por la Unión Europea y ESA |
 | Censo agropecuario | Superficie y producción por municipio | Shapefiles por cultivo del proyecto |
 | Leaflet, Chart.js | Interfaz web | Licencias BSD-2 y MIT |
 
