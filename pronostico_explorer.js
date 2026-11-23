@@ -169,7 +169,7 @@
         if (!esCom()) { nota.hidden = true; return; }
         const i = COM.info;
         nota.hidden = false;
-        nota.textContent = `Comunidades de los municipios productores (Censo 2024). Cada comunidad toma el pronóstico de ` +
+        nota.textContent = `Comunidades de los municipios productores (shapefile de comunidades del BDP). Cada comunidad toma el pronóstico de ` +
             `su celda de ${String(i.resolucion).replace('.', ',')}° (${num(i.n_celdas, 0)} celdas)` +
             (i.con_altitud ? ' con la temperatura ajustada a la altitud de la comunidad.' : '.');
     }

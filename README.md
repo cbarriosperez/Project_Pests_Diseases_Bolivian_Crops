@@ -113,7 +113,7 @@ La plataforma web tiene cinco secciones: **Presentación**, **Explorar Datos**, 
 | 🗺️ **Riesgo histórico** | Mapas del índice de riesgo calculado con clima observado (2023–2025) | `Salidas_Modelos_Agroclimaticos/` + `explorer_data.js` | Estática |
 | 🧪 **Simulador de riesgo** | Umbrales, pesos y variables definidos por el usuario para explorar plagas o enfermedades nuevas; exporta enlace, CSV, JSON y script Python | `pronostico_latest.json` (cálculo en el navegador) | Diaria (usa el pronóstico vigente) |
 
-En el pronóstico, las alertas y el simulador, el selector **«Ver resultados por: Municipio / Comunidad»** cambia entre los 305 municipios productores y las **20.777 comunidades** (Censo 2024) de esos municipios (sección [5.5](#55-nivel-comunidad)). Los tres selectores están sincronizados.
+En el pronóstico, las alertas y el simulador, el selector **«Ver resultados por: Municipio / Comunidad»** cambia entre los 305 municipios productores y las **20.777 comunidades** de esos municipios (shapefile de comunidades compartido por el BDP, `Comunidades_2025_Pol.shp`) (sección [5.5](#55-nivel-comunidad)). Los tres selectores están sincronizados.
 
 <table>
 <tr>
@@ -138,7 +138,7 @@ flowchart TB
         direction LR
         CH["CHIRPS v3<br/>precipitación"]
         AG["AgERA5 v2<br/>Tmax · Tmin · HR · ETo · VPD"]
-        SHP["GADM 4.1 + censo agropecuario<br/>+ comunidades Censo 2024"]
+        SHP["GADM 4.1 + censo agropecuario<br/>+ comunidades (BDP)"]
         OM["Open-Meteo API<br/>GFS · ECMWF · AIFS · ICON · GEM"]
     end
 
@@ -151,7 +151,7 @@ flowchart TB
             P1["pronostico_<br/>municipios.py"] --> P2["correr_modelos.py<br/>15 modelos"]
             P3["pronostico_municipios.py<br/>--nivel comunidades"]
         end
-        P0["preparar_<br/>geometria.py · comunidades.py"]
+        P0["preparar_geometria.py<br/>preparar_comunidades.py"]
     end
 
     subgraph REPO["③ Datos publicados en el repositorio"]
@@ -230,7 +230,7 @@ Project_Pests_Diseases_Bolivian_Crops/
 │   └── pronostico/
 │       ├── preparar_geometria.py       # Shapefiles → GeoJSON + índice de cultivos
 │       ├── pronostico_municipios.py    # Descarga Open-Meteo → pronostico_latest.json (y por celdas con --nivel comunidades)
-│       ├── preparar_comunidades.py     # Comunidades del Censo 2024 → municipios productores → GeoJSON
+│       ├── preparar_comunidades.py     # Comunidades (shapefile del BDP) → municipios productores → GeoJSON
 │       ├── elevacion_comunidades.py    # Altitud de cada comunidad (Copernicus DEM GLO-90)
 │       └── requirements.txt
 ├── data/
@@ -239,7 +239,7 @@ Project_Pests_Diseases_Bolivian_Crops/
 │   │   ├── departamentos_bolivia.geojson   # 9 departamentos
 │   │   ├── cultivos_municipios.json        # cultivo → municipios productores (ha, t)
 │   │   ├── comunidades/                    # comunidades_bolivia.geojson + elevacion_comunidades.json
-│   │   └── shapefiles/                     # GADM 4.1 nivel 3, shapefiles por cultivo y comunidades (Censo 2024)
+│   │   └── shapefiles/                     # GADM 4.1 nivel 3, shapefiles por cultivo y comunidades (BDP)
 │   ├── pronostico/pronostico_latest.json   # Generado a diario
 │   ├── pronostico/pronostico_comunidades_latest.json   # Generado a diario (celdas)
 │   └── alertas/alertas_latest.json         # Generado a diario
@@ -311,7 +311,7 @@ El horizonte efectivo varía por modelo. En la corrida del 23-oct-2026:
 | `municipios_bolivia.geojson` | 344 municipios simplificados (~650 m, topología preservada) + `lat`/`lon` del punto de consulta | `preparar_geometria.py` |
 | `departamentos_bolivia.geojson` | 9 departamentos (disolución de municipios) | `preparar_geometria.py` |
 | `cultivos_municipios.json` | Por cultivo: municipios productores con nombres, superficie (ha) y producción (t) | `preparar_geometria.py` |
-| `Comunidades_2025_Pol.shp` | 22.978 comunidades con código INE, nombre, población y viviendas | Censo 2024 (INE) |
+| `Comunidades_2025_Pol.shp` | 22.978 comunidades con código INE, nombre, población y viviendas | Compartido por el BDP |
 | `comunidades/comunidades_bolivia.geojson` | 20.777 comunidades de los municipios productores, simplificadas, con su municipio y punto de consulta | `preparar_comunidades.py` |
 | `comunidades/elevacion_comunidades.json` | Altitud (m) de cada comunidad | `elevacion_comunidades.py` |
 
@@ -412,7 +412,7 @@ Algunos municipios del censo comparten un mismo polígono GADM (p. ej. Jesús de
 
 ### 5.5 Nivel «Comunidad»
 
-Las comunidades del Censo 2024 se recortan a las zonas productoras actuales: se conservan las que caen (por su punto representativo) en los 305 municipios productores, y cada cultivo «ve» las comunidades de sus municipios.
+Las comunidades del shapefile compartido por el BDP (`Comunidades_2025_Pol.shp`) se recortan a las zonas productoras actuales: se conservan las que caen (por su punto representativo) en los 305 municipios productores, y cada cultivo «ve» las comunidades de sus municipios.
 
 | Cultivo | Comunidades | Cultivo | Comunidades |
 |---|---:|---|---:|
@@ -655,7 +655,7 @@ python Scripts/pronostico/pronostico_municipios.py --nivel comunidades      # pr
 
 | Script | Qué hace | Cuándo |
 |---|---|---|
-| `Scripts/pronostico/preparar_comunidades.py` | Corta las comunidades del Censo 2024 a los municipios productores y escribe `comunidades_bolivia.geojson` (requiere `geopandas` ≥ 1.0 y `shapely` ≥ 2.1) | Una vez, o al cambiar los shapefiles |
+| `Scripts/pronostico/preparar_comunidades.py` | Corta las comunidades del shapefile del BDP a los municipios productores y escribe `comunidades_bolivia.geojson` (requiere `geopandas` ≥ 1.0 y `shapely` ≥ 2.1) | Una vez, o al cambiar los shapefiles |
 | `Scripts/pronostico/elevacion_comunidades.py` | Altitud de cada comunidad leyendo solo los bloques necesarios de las teselas Copernicus DEM GLO-90 en AWS (requiere `rasterio`) | Una vez; GitHub Actions lo corre si falta el archivo |
 | `pronostico_municipios.py --nivel comunidades` | Pronóstico por celdas → `pronostico_comunidades_latest.json` (solo modelos deterministas) | Diaria (GitHub Actions) |
 | `Scripts/Modelos_Agroclimaticos_Python/correr_modelos_comunidades.py` | Los 15 modelos por comunidad, con el ajuste por altitud; un CSV por indicador en `Salidas_Modelos_Agroclimaticos/Pronostico_Comunidades/` | Manual (revisión y replicación) |
@@ -924,7 +924,7 @@ python -m http.server 8000
 | AgERA5 v2 | Temperatura, HR, ETo, VPD | Copernicus Climate Change Service (C3S). Boogaard et al. (2020), C3S Climate Data Store. Licencia Copernicus |
 | Open-Meteo | Pronóstico diario | [open-meteo.com](https://open-meteo.com/), datos CC BY 4.0; plan gratuito para uso no comercial |
 | GADM 4.1 | Límites municipales | [gadm.org](https://gadm.org/); uso académico y no comercial |
-| Censo de Población y Vivienda 2024 | Comunidades (polígonos, nombre, población) | Instituto Nacional de Estadística (INE) de Bolivia |
+| Shapefile de comunidades (`Comunidades_2025_Pol.shp`) | Comunidades (polígonos, nombre, población) | Compartido por el BDP |
 | Copernicus DEM GLO-90 | Altitud de las comunidades | © DLR e.V. 2010-2014 y © Airbus Defence and Space GmbH 2014-2018, proporcionado bajo COPERNICUS por la Unión Europea y ESA |
 | Censo agropecuario | Superficie y producción por municipio | Shapefiles por cultivo del proyecto |
 | Leaflet, Chart.js | Interfaz web | Licencias BSD-2 y MIT |

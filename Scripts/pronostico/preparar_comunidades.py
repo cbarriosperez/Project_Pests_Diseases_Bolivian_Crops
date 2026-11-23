@@ -3,7 +3,7 @@
 Preparación de las comunidades para el nivel «Comunidad» de la plataforma
 (se corre una sola vez, o cuando cambien el shapefile de comunidades o los de cultivos).
 
-Corta (filtra) las comunidades del Censo a las zonas productoras actuales, es decir, a los
+Corta (filtra) las comunidades del shapefile compartido por el BDP (Comunidades_2025_Pol.shp) a las zonas productoras actuales, es decir, a los
 municipios productores de cada cultivo (data/geo/cultivos_municipios.json). Cada comunidad se
 asigna a su municipio GADM por la ubicación de su punto representativo (un punto que siempre cae
 dentro del polígono; en comunidades de forma regular coincide prácticamente con el centroide).
